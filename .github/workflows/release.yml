@@ -1,0 +1,158 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'  # 推送 v0.2.0 这样的 tag 时触发构建
+
+env:
+  CARGO_INCREMENTAL: 0
+
+jobs:
+  build-tauri:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos-latest
+            rust_target: aarch64-apple-darwin
+            tauri_args: --target aarch64-apple-darwin
+          - platform: macos-latest
+            rust_target: x86_64-apple-darwin
+            tauri_args: --target x86_64-apple-darwin
+          - platform: windows-latest
+            rust_target: x86_64-pc-windows-msvc
+            tauri_args: ''
+
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.rust_target }}
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Install Python dependencies
+        run: |
+          pip install -r python-core/requirements.txt
+          pip install pyinstaller
+
+      # ---- PyInstaller 打包 Python sidecar ----
+      - name: Build Python sidecar (macOS)
+        if: runner.os == 'macOS'
+        env:
+          BINARY_NAME: novelsync-server-${{ matrix.rust_target }}
+        run: |
+          echo "prod" > .env.runtime
+          cd python-core
+          pyinstaller --onefile \
+            --name "$BINARY_NAME" \
+            --distpath ../dist-python \
+            --workpath ../build-python \
+            --paths . \
+            --add-data "../.env.production:." \
+            --add-data "../.env.runtime:." \
+            --add-data "config.py:." \
+            --add-data "api:api" \
+            --add-data "core:core" \
+            --add-data "storage:storage" \
+            --add-data "workers:workers" \
+            --hidden-import=api --hidden-import=api.main \
+            --hidden-import=core --hidden-import=core.miaobi_client \
+            --hidden-import=core.baijiahao_client \
+            --hidden-import=storage --hidden-import=storage.models \
+            --hidden-import=storage.database --hidden-import=storage.crud \
+            --hidden-import=workers --hidden-import=workers.scheduler \
+            --hidden-import=config \
+            --hidden-import=uvicorn.logging \
+            --hidden-import=uvicorn.loops --hidden-import=uvicorn.loops.auto \
+            --hidden-import=uvicorn.protocols --hidden-import=uvicorn.protocols.http \
+            --hidden-import=uvicorn.protocols.http.auto \
+            --hidden-import=uvicorn.protocols.http.h11_impl \
+            --hidden-import=uvicorn.protocols.http.httptools_impl \
+            --hidden-import=uvicorn.protocols.websockets \
+            --hidden-import=uvicorn.protocols.websockets.auto \
+            --hidden-import=uvicorn.lifespan --hidden-import=uvicorn.lifespan.on \
+            --hidden-import=sqlmodel --hidden-import=pydantic \
+            --hidden-import=dotenv --hidden-import=watchdog \
+            --hidden-import=watchdog.observers --hidden-import=watchdog.events \
+            --hidden-import=docx --hidden-import=multipart \
+            main.py
+          mkdir -p ../src-tauri/binaries
+          cp ../dist-python/$BINARY_NAME ../src-tauri/binaries/
+          chmod +x ../src-tauri/binaries/$BINARY_NAME
+
+      - name: Build Python sidecar (Windows)
+        if: runner.os == 'Windows'
+        env:
+          BINARY_NAME: novelsync-server-${{ matrix.rust_target }}.exe
+        run: |
+          echo "prod" > .env.runtime
+          cd python-core
+          pyinstaller --onefile `
+            --name "novelsync-server-${{ matrix.rust_target }}" `
+            --distpath ../dist-python `
+            --workpath ../build-python `
+            --paths . `
+            --add-data "../.env.production;." `
+            --add-data "../.env.runtime;." `
+            --add-data "config.py;." `
+            --add-data "api;api" `
+            --add-data "core;core" `
+            --add-data "storage;storage" `
+            --add-data "workers;workers" `
+            --hidden-import=api --hidden-import=api.main `
+            --hidden-import=core --hidden-import=core.miaobi_client `
+            --hidden-import=core.baijiahao_client `
+            --hidden-import=storage --hidden-import=storage.models `
+            --hidden-import=storage.database --hidden-import=storage.crud `
+            --hidden-import=workers --hidden-import=workers.scheduler `
+            --hidden-import=config `
+            --hidden-import=uvicorn.logging `
+            --hidden-import=uvicorn.loops --hidden-import=uvicorn.loops.auto `
+            --hidden-import=uvicorn.protocols --hidden-import=uvicorn.protocols.http `
+            --hidden-import=uvicorn.protocols.http.auto `
+            --hidden-import=uvicorn.protocols.http.h11_impl `
+            --hidden-import=uvicorn.protocols.http.httptools_impl `
+            --hidden-import=uvicorn.protocols.websockets `
+            --hidden-import=uvicorn.protocols.websockets.auto `
+            --hidden-import=uvicorn.lifespan --hidden-import=uvicorn.lifespan.on `
+            --hidden-import=sqlmodel --hidden-import=pydantic `
+            --hidden-import=dotenv --hidden-import=watchdog `
+            --hidden-import=watchdog.observers --hidden-import=watchdog.events `
+            --hidden-import=docx --hidden-import=multipart `
+            main.py
+          mkdir -p ../src-tauri/binaries
+          cp ../dist-python/$env:BINARY_NAME ../src-tauri/binaries/
+
+      # ---- Tauri 构建 + 自动上传到 GitHub Releases ----
+      - name: Build Tauri app and publish
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: 'NovelSync ${{ github.ref_name }}'
+          releaseBody: '详见提交记录'
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.tauri_args }}

@@ -1,0 +1,42 @@
+# Node.js
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+.env.runtime
+venv/
+env/
+.venv/
+.pytest_cache/
+
+# SQLite & Data Storage
+python-core/data/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+
+# Tauri Build Target
+src-tauri/target/
+src-tauri/Cargo.lock
+src-tauri/binaries/
+
+# PyInstaller Build
+dist-python/
+build-python/
+*.spec
+.env.runtime
+
+# Release Output
+release/
