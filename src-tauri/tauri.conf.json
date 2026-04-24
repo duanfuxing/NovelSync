@@ -65,7 +65,12 @@
       "csp": null
     },
     "updater": {
-      "active": false
+      "active": true,
+      "dialog": true,
+      "endpoints": [
+        "https://github.com/duanfuxing/NovelSync/releases/latest/download/latest.json"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDJBMUEzNUZBNzREQjQ0NzEKUldSeFJOdDAralVhS2liNGhGYWlUZ0ptNVY1Ym5nbG9pMUtWcEdKSEZJVzZQbWZ0L3pJa3dBeFYK"
     },
     "windows": [
       {
