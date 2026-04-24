@@ -74,12 +74,16 @@ jobs:
             --add-data "core:core" \
             --add-data "storage:storage" \
             --add-data "workers:workers" \
+            --add-data "manager:manager" \
+            --add-data "utils:utils" \
             --hidden-import=api --hidden-import=api.main \
             --hidden-import=core --hidden-import=core.miaobi_client \
             --hidden-import=core.baijiahao_client \
             --hidden-import=storage --hidden-import=storage.models \
             --hidden-import=storage.database --hidden-import=storage.crud \
             --hidden-import=workers --hidden-import=workers.scheduler \
+            --hidden-import=manager --hidden-import=manager.sync_manager \
+            --hidden-import=utils --hidden-import=utils.log_setup \
             --hidden-import=config \
             --hidden-import=uvicorn.logging \
             --hidden-import=uvicorn.loops --hidden-import=uvicorn.loops.auto \
@@ -118,12 +122,16 @@ jobs:
             --add-data "core;core" `
             --add-data "storage;storage" `
             --add-data "workers;workers" `
+            --add-data "manager;manager" `
+            --add-data "utils;utils" `
             --hidden-import=api --hidden-import=api.main `
             --hidden-import=core --hidden-import=core.miaobi_client `
             --hidden-import=core.baijiahao_client `
             --hidden-import=storage --hidden-import=storage.models `
             --hidden-import=storage.database --hidden-import=storage.crud `
             --hidden-import=workers --hidden-import=workers.scheduler `
+            --hidden-import=manager --hidden-import=manager.sync_manager `
+            --hidden-import=utils --hidden-import=utils.log_setup `
             --hidden-import=config `
             --hidden-import=uvicorn.logging `
             --hidden-import=uvicorn.loops --hidden-import=uvicorn.loops.auto `
