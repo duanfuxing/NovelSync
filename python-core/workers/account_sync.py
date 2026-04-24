@@ -63,7 +63,7 @@ class AccountSyncWorker(BaseWorker):
             page += 1
 
         if total_cookies:
-            upsert_bjh_cookies(total_cookies, user_phone=user_phone)
+            upsert_bjh_cookies(total_cookies, user_phone=user_phone, cleanup_orphans=True)
             print(f"[AccountSync] 同步完成，写入/更新 {len(total_cookies)} 条 Cookie 记录。")
         else:
             print("[AccountSync] 本轮未获取到 Cookie 数据。")

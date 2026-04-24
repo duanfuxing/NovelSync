@@ -107,11 +107,11 @@ def clear_client_config(client_id: str):
             session.commit()
             print(f"[Storage] 已清除客户端配置 (Client={client_id})")
 
-def upsert_bjh_cookies(cookies_list: list[dict], user_phone: str = ""):
+def upsert_bjh_cookies(cookies_list: list[dict], user_phone: str = "", cleanup_orphans: bool = False):
     """
     同步批量更新百家号 Cookie 列表到本地。
     支持自动插入与更新（以 user_phone + bjh_id 匹配）。
-    为了保持数据干净，可以把本地有多余（云端没有的）的记录 status 重置为0。
+    cleanup_orphans=True 时，将本地有但云端没有的记录 status 重置为0（仅在完整同步时使用）。
     """
     if not cookies_list:
         return
@@ -158,8 +158,8 @@ def upsert_bjh_cookies(cookies_list: list[dict], user_phone: str = ""):
                 )
                 session.add(new_cookie)
                 
-        # 2. 如果远端没有这些号，将其 status 设为 0（仅当前用户范围内）
-        if bjh_ids_in_cloud:
+        # 2. 完整同步时，将云端不存在的记录 status 设为 0（仅当前用户范围内）
+        if cleanup_orphans and bjh_ids_in_cloud:
             statement = select(ClientBjhCookie).where(
                 ClientBjhCookie.user_phone == user_phone,
                 ClientBjhCookie.bjh_id.notin_(bjh_ids_in_cloud)

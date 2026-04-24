@@ -70,9 +70,9 @@ class MiaobiClient:
         """获取用户信息"""
         return self._get("api/v1/user/info")
 
-    def get_user_cookies(self, page: int = 1) -> dict:
+    def get_user_cookies(self, page: int = 1, page_size: int = 200) -> dict:
         """获取百家号用户 Cookies 列表"""
-        return self._get("baijiahao-sync/v1/cookie/userCookies", params={"page": page})
+        return self._get("baijiahao-sync/v1/cookie/userCookies", params={"currentPage": page, "pageSize": page_size})
 
     # ========== 1. 上报小说原文 ==========
 

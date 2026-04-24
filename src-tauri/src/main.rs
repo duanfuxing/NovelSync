@@ -25,25 +25,41 @@ fn main() {
     let app = tauri::Builder::default()
         .manage(SidecarState(Mutex::new(None)))
         .setup(|app| {
-            let (mut rx, child) = Command::new_sidecar("novelsync-server")
-                .expect("Failed to create novelsync-server sidecar")
-                .spawn()
-                .expect("Failed to spawn novelsync-server sidecar");
+            let sidecar_result = Command::new_sidecar("novelsync-server")
+                .and_then(|cmd| cmd.spawn());
 
-            // 保存子进程句柄到托管状态
-            let state = app.state::<SidecarState>();
-            *state.0.lock().unwrap() = Some(child);
+            match sidecar_result {
+                Ok((mut rx, child)) => {
+                    // 保存子进程句柄到托管状态
+                    let state = app.state::<SidecarState>();
+                    *state.0.lock().unwrap() = Some(child);
 
-            tauri::async_runtime::spawn(async move {
-                use tauri::api::process::CommandEvent;
-                while let Some(event) = rx.recv().await {
-                    match event {
-                        CommandEvent::Stdout(line) => println!("[Python] {}", line),
-                        CommandEvent::Stderr(line) => eprintln!("[Python:ERR] {}", line),
-                        _ => {}
-                    }
+                    tauri::async_runtime::spawn(async move {
+                        use tauri::api::process::CommandEvent;
+                        while let Some(event) = rx.recv().await {
+                            match event {
+                                CommandEvent::Stdout(line) => println!("[Python] {}", line),
+                                CommandEvent::Stderr(line) => eprintln!("[Python:ERR] {}", line),
+                                _ => {}
+                            }
+                        }
+                    });
                 }
-            });
+                Err(e) => {
+                    let msg = format!(
+                        "无法启动后端服务 (novelsync-server):\n{}\n\n请确认安装了正确架构的版本。",
+                        e
+                    );
+                    eprintln!("[Tauri] {}", msg);
+                    // 弹窗提示用户，而非直接 crash
+                    tauri::api::dialog::blocking::message(
+                        None::<&tauri::Window>,
+                        "NovelSync 启动失败",
+                        &msg,
+                    );
+                    std::process::exit(1);
+                }
+            }
 
             Ok(())
         })
