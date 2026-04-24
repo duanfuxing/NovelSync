@@ -164,6 +164,6 @@ jobs:
           tagName: ${{ github.ref_name }}
           releaseName: 'NovelSync ${{ github.ref_name }}'
           releaseBody: '详见提交记录'
-          releaseDraft: true
+          releaseDraft: false
           prerelease: false
           args: ${{ matrix.tauri_args }}
