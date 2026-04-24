@@ -105,7 +105,7 @@ APP_ENV=dev .venv/bin/uvicorn python-core.api.main:app --host 127.0.0.1 --port 8
 
 cd /Users/dl/work/code/Python/NovelSync/python-core && APP_ENV=prod /Users/dl/work/code/Python/NovelSync/.venv/bin/python main.py
 
-# 终端 2: 启动前端 
+# 终端 2: 启动前端  
 npm install
 npm run dev
 ```
