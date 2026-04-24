@@ -97,7 +97,7 @@ Set-ExecutionPolicy RemoteSigned
 如果不需要 Tauri 打包，仍可手动分别启动前后端进行开发调试：
 
 ```bash
-# 终端 1: 启动 Python 后端
+# 终端 1: 启动 Python 后端. 
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r python-core/requirements.txt
