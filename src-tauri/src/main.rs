@@ -26,7 +26,7 @@ fn main() {
         .manage(SidecarState(Mutex::new(None)))
         .setup(|app| {
             let sidecar_result = Command::new_sidecar("novelsync-server")
-                .and_then(|cmd| cmd.spawn());
+                .and_then(|cmd| Ok(cmd.spawn()?));
 
             match sidecar_result {
                 Ok((mut rx, child)) => {

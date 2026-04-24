@@ -51,6 +51,7 @@ class AccountSyncWorker(BaseWorker):
                 break
 
             total_cookies.extend(current_list)
+            print(f"[AccountSync] 第 {page} 页 bjh_ids: {[str(c.get('bjh_id', '?')) for c in current_list]}")
 
             current_page = page  # API 的 currentPage 不可靠（始终返回 1），用本地 page 判断
             last_page = pagination.get("lastPage", page)
