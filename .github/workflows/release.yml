@@ -20,7 +20,7 @@ jobs:
           - platform: macos-latest
             rust_target: aarch64-apple-darwin
             tauri_args: --target aarch64-apple-darwin
-          - platform: macos-13  # Intel runner, PyInstaller 不支持交叉编译
+          - platform: macos-15  # Intel runner, PyInstaller 不支持交叉编译
             rust_target: x86_64-apple-darwin
             tauri_args: --target x86_64-apple-darwin
           - platform: windows-latest
