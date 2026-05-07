@@ -14,7 +14,7 @@ from pydantic import BaseModel
 from typing import Optional
 
 from storage.database import init_db
-from storage.crud import upsert_client_config, get_client_config, clear_client_config, upsert_bjh_cookies, get_all_bjh_cookies, get_watch_path, set_watch_path, get_all_worker_status, get_novel_list, get_dashboard_stats, upsert_user_profile, get_active_user_phone
+from storage.crud import upsert_client_config, get_client_config, clear_client_config, upsert_bjh_cookies, get_all_bjh_cookies, get_watch_path, set_watch_path, get_all_worker_status, get_novel_list, get_dashboard_stats, upsert_user_profile, get_active_user_phone, get_active_watch_path
 from core.miaobi_client import MiaobiClient
 
 
@@ -411,6 +411,7 @@ def get_novels(
     end_date: str = "",
     sort_field: str = "publish_time",
     sort_order: str = "desc",
+    sync_status: str = "",
 ):
     """小说列表分页查询（关联 articles + orders）"""
     try:
@@ -423,12 +424,122 @@ def get_novels(
             end_date=end_date,
             sort_field=sort_field,
             sort_order=sort_order,
+            sync_status=sync_status,
             user_phone=get_active_user_phone() or "",
         )
         return {"code": 10000, "message": "success", "data": result}
     except Exception as e:
         print(f"[API] 查询小说列表失败: {e}")
         return {"code": 500, "message": f"查询失败: {e}"}
+
+
+@app.get("/novels/match-files")
+def match_local_files(title: str, threshold: float = 0.4):
+    """
+    根据小说标题，在本地 watch_path 目录下模糊匹配相似文件名。
+    返回相似度 >= threshold 的候选文件列表（按相似度降序）。
+    """
+    import os
+    from difflib import SequenceMatcher
+
+    try:
+        watch_path = get_active_watch_path()
+        if not watch_path or not os.path.isdir(watch_path):
+            return {"code": 400, "message": "本地监控目录未配置或不存在"}
+
+        supported_exts = {".docx", ".doc", ".txt"}
+        candidates = []
+
+        for root, _, files in os.walk(watch_path):
+            for fname in files:
+                ext = os.path.splitext(fname)[1].lower()
+                if ext not in supported_exts:
+                    continue
+                name_without_ext = os.path.splitext(fname)[0]
+                ratio = SequenceMatcher(None, title, name_without_ext).ratio()
+                if ratio >= threshold:
+                    full_path = os.path.join(root, fname)
+                    file_size = os.path.getsize(full_path)
+                    candidates.append({
+                        "fileName": fname,
+                        "filePath": full_path,
+                        "nameWithoutExt": name_without_ext,
+                        "similarity": round(ratio, 3),
+                        "fileSize": file_size,
+                    })
+
+        candidates.sort(key=lambda x: x["similarity"], reverse=True)
+        return {"code": 10000, "message": "success", "data": candidates}
+    except Exception as e:
+        print(f"[API] 匹配本地文件失败: {e}")
+        return {"code": 500, "message": f"匹配失败: {e}"}
+
+
+@app.get("/novels/reveal-file")
+def reveal_file_in_finder(file_path: str):
+    """在系统文件管理器中定位并高亮指定文件"""
+    import subprocess
+    import platform
+
+    try:
+        if not file_path or not os.path.exists(file_path):
+            return {"code": 400, "message": f"文件不存在: {file_path}"}
+
+        system = platform.system()
+        if system == "Darwin":
+            subprocess.Popen(["open", "-R", file_path])
+        elif system == "Windows":
+            subprocess.Popen(["explorer", "/select,", file_path])
+        else:
+            subprocess.Popen(["xdg-open", os.path.dirname(file_path)])
+
+        return {"code": 10000, "message": "success"}
+    except Exception as e:
+        print(f"[API] 定位文件失败: {e}")
+        return {"code": 500, "message": f"定位文件失败: {e}"}
+
+
+class RenameFileItem(BaseModel):
+    """重命名文件请求体"""
+    filePath: str       # 原文件完整路径
+    newName: str        # 新文件名（不含扩展名）
+
+
+@app.post("/novels/rename-file")
+def rename_local_file(item: RenameFileItem):
+    """重命名本地文件，保留原扩展名"""
+    import os
+
+    try:
+        if not item.filePath or not os.path.exists(item.filePath):
+            return {"code": 400, "message": f"文件不存在: {item.filePath}"}
+
+        if not item.newName or not item.newName.strip():
+            return {"code": 400, "message": "新文件名不能为空"}
+
+        directory = os.path.dirname(item.filePath)
+        ext = os.path.splitext(item.filePath)[1]  # 保留原扩展名
+        new_path = os.path.join(directory, item.newName.strip() + ext)
+
+        if os.path.exists(new_path):
+            return {"code": 400, "message": f"目标文件已存在: {os.path.basename(new_path)}"}
+
+        os.rename(item.filePath, new_path)
+        print(f"[API] 文件重命名成功: {item.filePath} -> {new_path}")
+
+        return {
+            "code": 10000,
+            "message": "重命名成功",
+            "data": {
+                "oldPath": item.filePath,
+                "newPath": new_path,
+                "fileName": item.newName.strip() + ext,
+                "nameWithoutExt": item.newName.strip(),
+            },
+        }
+    except Exception as e:
+        print(f"[API] 重命名文件失败: {e}")
+        return {"code": 500, "message": f"重命名失败: {e}"}
 
 
 # ========== Worker 状态查询 ==========

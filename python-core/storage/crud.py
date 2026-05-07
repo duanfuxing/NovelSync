@@ -605,6 +605,7 @@ def get_novel_list(
     end_date: str = "",
     sort_field: str = "publish_time",
     sort_order: str = "desc",
+    sync_status: str = "",
     user_phone: str = "",
 ) -> dict:
     """
@@ -635,6 +636,8 @@ def get_novel_list(
             ))
         if app_id:
             base_query = base_query.where(ClientArticle.app_id == app_id)
+        if sync_status != "":
+            base_query = base_query.where(ClientArticle.sync_status == int(sync_status))
         if start_date:
             base_query = base_query.where(ClientArticle.publish_time >= start_date)
         if end_date:

@@ -101,7 +101,7 @@ Set-ExecutionPolicy RemoteSigned
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r python-core/requirements.txt
-APP_ENV=dev .venv/bin/uvicorn python-core.api.main:app --host 127.0.0.1 --port 8000 --reload
+APP_ENV=dev .venv/bin/uvicorn python-core.api.main:app --host 127.0.0.1 --port 18321 --reload
 
 cd /Users/dl/work/code/Python/NovelSync/python-core && APP_ENV=prod /Users/dl/work/code/Python/NovelSync/.venv/bin/python main.py
 

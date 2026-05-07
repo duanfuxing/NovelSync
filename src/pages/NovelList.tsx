@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Card, Input, DatePicker, Button, Tag, Image, Typography, Pagination, Spin, Empty, Avatar, Tooltip, message, Select } from 'antd';
+import { Card, Input, DatePicker, Button, Tag, Image, Typography, Pagination, Spin, Empty, Avatar, Tooltip, message, Select, Modal } from 'antd';
 import {
   SearchOutlined,
   ReloadOutlined,
@@ -15,6 +15,12 @@ import {
   LinkOutlined,
   SortAscendingOutlined,
   SortDescendingOutlined,
+  FolderOpenOutlined,
+  FileTextOutlined,
+  EditOutlined,
+  SaveOutlined,
+  CloseCircleOutlined,
+  AimOutlined,
 } from '@ant-design/icons';
 import axios from 'axios';
 import dayjs from 'dayjs';
@@ -44,11 +50,94 @@ interface NovelItem {
   publishTime: string;
 }
 
+interface MatchFile {
+  fileName: string;
+  filePath: string;
+  nameWithoutExt: string;
+  similarity: number;
+  fileSize: number;
+}
+
 interface PaginationInfo {
   currentPage: number;
   pageSize: number;
   total: number;
 }
+
+/**
+ * LCS diff 高亮：对比 source（小说标题）和 target（文件名），
+ * 返回双行渲染：source 用删除线标记缺失字符，target 用黄色荧光笔标记差异字符。
+ */
+const computeLCS = (a: string, b: string): boolean[][] => {
+  const m = a.length, n = b.length;
+  const dp = Array.from({ length: m + 1 }, () => Array(n + 1).fill(0));
+  for (let i = 1; i <= m; i++)
+    for (let j = 1; j <= n; j++)
+      dp[i][j] = a[i - 1] === b[j - 1] ? dp[i - 1][j - 1] + 1 : Math.max(dp[i - 1][j], dp[i][j - 1]);
+  const inA = Array(m).fill(false), inB = Array(n).fill(false);
+  let i = m, j = n;
+  while (i > 0 && j > 0) {
+    if (a[i - 1] === b[j - 1]) { inA[i - 1] = true; inB[j - 1] = true; i--; j--; }
+    else if (dp[i - 1][j] > dp[i][j - 1]) i--;
+    else j--;
+  }
+  return [inA, inB];
+};
+
+/** 渲染 source（小说标题）：匹配字符正常显示，非 LCS 字符用红色删除线 */
+const renderSourceDiff = (source: string, target: string): React.ReactNode => {
+  const [inSource] = computeLCS(source, target);
+  const spans: React.ReactNode[] = [];
+  let buf = '', isMiss = false;
+  const flush = (key: number) => {
+    if (!buf) return;
+    spans.push(
+      isMiss
+        ? <span key={key} style={{ color: '#cf1322', textDecoration: 'line-through', textDecorationColor: '#cf1322', opacity: 0.7 }}>{buf}</span>
+        : <span key={key}>{buf}</span>
+    );
+    buf = '';
+  };
+  for (let k = 0; k < source.length; k++) {
+    const miss = !inSource[k];
+    if (miss !== isMiss) { flush(k); isMiss = miss; }
+    buf += source[k];
+  }
+  flush(source.length);
+  return <>{spans}</>;
+};
+
+/** 渲染 target（文件名）：匹配字符正常显示，非 LCS 字符用黄色荧光笔 + 绿色下划线 */
+const renderTargetDiff = (source: string, target: string): React.ReactNode => {
+  const [, inTarget] = computeLCS(source, target);
+  const spans: React.ReactNode[] = [];
+  let buf = '', isMiss = false;
+  const flush = (key: number) => {
+    if (!buf) return;
+    spans.push(
+      isMiss
+        ? <span key={key} style={{ background: '#ffe58f', color: '#874d00', borderRadius: 2, padding: '0 1px', fontWeight: 600, textDecoration: 'underline', textDecorationColor: '#52c41a', textUnderlineOffset: 2 }}>{buf}</span>
+        : <span key={key}>{buf}</span>
+    );
+    buf = '';
+  };
+  for (let k = 0; k < target.length; k++) {
+    const miss = !inTarget[k];
+    if (miss !== isMiss) { flush(k); isMiss = miss; }
+    buf += target[k];
+  }
+  flush(target.length);
+  return <>{spans}</>;
+};
+
+/** 计算差异统计：缺失（标题有文件名没有）、多余（文件名有标题没有）、一致（LCS 长度） */
+const getDiffStats = (source: string, target: string) => {
+  const [inSource, inTarget] = computeLCS(source, target);
+  const matched = inSource.filter(Boolean).length;
+  const missing = source.length - matched;  // 标题中有但文件名缺失的字符
+  const extra = target.length - inTarget.filter(Boolean).length;  // 文件名中多出的字符
+  return { matched, missing, extra };
+};
 
 /* 数据指标项 */
 const StatItem: React.FC<{ icon: React.ReactNode; value: number; label: string; color?: string }> = ({ icon, value, label, color }) => (
@@ -81,9 +170,19 @@ const NovelList: React.FC = () => {
   const [keyword, setKeyword] = useState('');
   const [appId, setAppId] = useState('');
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
+  const [syncStatus, setSyncStatus] = useState<string>('');
   const [sortField, setSortField] = useState('publish_time');
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
   const [bjhOptions, setBjhOptions] = useState<{ value: string; label: string }[]>([]);
+
+  // 匹配文件相关
+  const [matchModalOpen, setMatchModalOpen] = useState(false);
+  const [matchLoading, setMatchLoading] = useState(false);
+  const [matchTitle, setMatchTitle] = useState('');
+  const [matchFiles, setMatchFiles] = useState<MatchFile[]>([]);
+  const [renamingIdx, setRenamingIdx] = useState<number | null>(null);
+  const [renameValue, setRenameValue] = useState('');
+  const [renameLoading, setRenameLoading] = useState(false);
 
   const fetchData = useCallback(async (page = 1, pageSize = 10, overrideSort?: { field: string; order: string }) => {
     setLoading(true);
@@ -96,6 +195,7 @@ const NovelList: React.FC = () => {
       };
       if (keyword) params.keyword = keyword;
       if (appId) params.app_id = appId;
+      if (syncStatus) params.sync_status = syncStatus;
       if (dateRange?.[0]) params.start_date = dateRange[0].format('YYYY-MM-DD');
       if (dateRange?.[1]) params.end_date = dateRange[1].format('YYYY-MM-DD');
 
@@ -109,7 +209,7 @@ const NovelList: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [keyword, appId, dateRange, sortField, sortOrder]);
+  }, [keyword, appId, syncStatus, dateRange, sortField, sortOrder]);
 
   useEffect(() => {
     fetchData();
@@ -127,6 +227,7 @@ const NovelList: React.FC = () => {
   const handleReset = async () => {
     setKeyword('');
     setAppId('');
+    setSyncStatus('');
     setDateRange(null);
     setSortField('publish_time');
     setSortOrder('desc');
@@ -155,6 +256,87 @@ const NovelList: React.FC = () => {
     fetchData(1, pagination.pageSize, { field: sortField, order: next });
   };
 
+  const handleMatchFiles = async (title: string) => {
+    setMatchTitle(title);
+    setMatchModalOpen(true);
+    setMatchLoading(true);
+    setMatchFiles([]);
+    try {
+      const res = await axios.get(`${LOCAL_API}/novels/match-files`, { params: { title } });
+      if (res.data.code === 10000) {
+        setMatchFiles(res.data.data ?? []);
+      } else {
+        message.warning(res.data.message || '匹配失败');
+      }
+    } catch (err) {
+      message.error('匹配请求失败');
+    } finally {
+      setMatchLoading(false);
+    }
+  };
+
+  const handleRevealFile = async (filePath: string) => {
+    try {
+      const res = await axios.get(`${LOCAL_API}/novels/reveal-file`, { params: { file_path: filePath } });
+      if (res.data.code !== 10000) message.warning(res.data.message || '定位失败');
+    } catch {
+      message.error('定位文件请求失败');
+    }
+  };
+
+  const handleStartRename = (idx: number) => {
+    setRenamingIdx(idx);
+    setRenameValue(matchTitle); // 预填小说标题
+  };
+
+  const handleCancelRename = () => {
+    setRenamingIdx(null);
+    setRenameValue('');
+  };
+
+  const handleSaveRename = async (idx: number) => {
+    const file = matchFiles[idx];
+    if (!file || !renameValue.trim()) return;
+    if (renameValue.trim() === file.nameWithoutExt) {
+      handleCancelRename();
+      return;
+    }
+    setRenameLoading(true);
+    try {
+      const res = await axios.post(`${LOCAL_API}/novels/rename-file`, {
+        filePath: file.filePath,
+        newName: renameValue.trim(),
+      });
+      if (res.data.code === 10000) {
+        message.success('重命名成功');
+        const d = res.data.data;
+        setMatchFiles(prev => prev.map((f, i) => i === idx ? {
+          ...f,
+          fileName: d.fileName,
+          filePath: d.newPath,
+          nameWithoutExt: d.nameWithoutExt,
+          similarity: 1, // 重命名为标题后相似度=100%
+        } : f));
+        handleCancelRename();
+      } else {
+        message.warning(res.data.message || '重命名失败');
+      }
+    } catch {
+      message.error('重命名请求失败');
+    } finally {
+      setRenameLoading(false);
+    }
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
+  const getSimilarityColor = (s: number) => s >= 0.8 ? '#52c41a' : s >= 0.6 ? '#1677ff' : '#faad14';
+  const getSimilarityTag = (s: number) => s >= 0.8 ? 'green' : s >= 0.6 ? 'blue' : 'orange';
+
   return (
     <div>
       {/* 搜索栏 */}
@@ -180,6 +362,18 @@ const NovelList: React.FC = () => {
             placeholder="百家号"
             style={{ width: 140 }}
             options={bjhOptions}
+          />
+          <Select
+            value={syncStatus || undefined}
+            onChange={(v) => { setSyncStatus(v || ''); fetchData(1, pagination.pageSize); }}
+            onClear={() => { setSyncStatus(''); setTimeout(() => fetchData(1, pagination.pageSize), 0); }}
+            allowClear
+            placeholder="同步状态"
+            style={{ width: 120 }}
+            options={[
+              { value: '0', label: '待同步' },
+              { value: '1', label: '已同步' },
+            ]}
           />
           <RangePicker value={dateRange as any} onChange={(dates) => setDateRange(dates as any)} style={{ width: 240 }} placeholder={['开始日期', '结束日期']} />
           <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginLeft: 'auto' }}>
@@ -317,6 +511,17 @@ const NovelList: React.FC = () => {
                         <LinkOutlined style={{ marginRight: 2 }} />查看原文
                       </a>
                     )}
+                    {item.syncStatus === 0 && (
+                      <Button
+                        type="link"
+                        size="small"
+                        icon={<FolderOpenOutlined />}
+                        style={{ fontSize: 12, padding: 0 }}
+                        onClick={() => handleMatchFiles(item.title)}
+                      >
+                        匹配文件
+                      </Button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -334,6 +539,158 @@ const NovelList: React.FC = () => {
           </>
         )}
       </Card>
+
+      {/* 匹配文件弹窗 */}
+      <Modal
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <FolderOpenOutlined />
+            <span>本地文件匹配</span>
+          </div>
+        }
+        open={matchModalOpen}
+        onCancel={() => setMatchModalOpen(false)}
+        footer={null}
+        width={800}
+      >
+        {/* 搜索标题展示 */}
+        <div style={{ background: '#fafafa', borderRadius: 8, padding: '10px 14px', marginBottom: 16, border: '1px solid #f0f0f0' }}>
+          <Text type="secondary" style={{ fontSize: 12 }}>小说标题：</Text>
+          <Text strong style={{ fontSize: 13 }}>{matchTitle}</Text>
+        </div>
+
+        {matchLoading ? (
+          <div style={{ textAlign: 'center', padding: 50 }}><Spin tip="扫描本地文件中..." /></div>
+        ) : matchFiles.length === 0 ? (
+          <Empty description="未找到相似文件，请确认本地监控目录是否正确" style={{ padding: '40px 0' }} />
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {matchFiles.map((file, idx) => (
+              <div
+                key={idx}
+                style={{
+                  border: '1px solid #f0f0f0',
+                  borderRadius: 10,
+                  padding: '14px 16px',
+                  transition: 'all 0.2s',
+                  cursor: 'default',
+                  background: idx === 0 ? '#f6ffed' : '#fff',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = getSimilarityColor(file.similarity); e.currentTarget.style.boxShadow = `0 2px 8px ${getSimilarityColor(file.similarity)}22`; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = '#f0f0f0'; e.currentTarget.style.boxShadow = 'none'; }}
+              >
+                {/* 摘要行：相似度 + 差异统计 */}
+                {(() => {
+                  const stats = getDiffStats(matchTitle, file.nameWithoutExt);
+                  return (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10, flexWrap: 'wrap' }}>
+                      <Tag color={getSimilarityTag(file.similarity)} style={{ margin: 0, fontSize: 12, borderRadius: 4, fontWeight: 600 }}>
+                        相似度 {(file.similarity * 100).toFixed(0)}%
+                      </Tag>
+                      {stats.missing > 0 && (
+                        <span style={{ fontSize: 12, color: '#cf1322' }}>缺失 {stats.missing} 字</span>
+                      )}
+                      {stats.extra > 0 && (
+                        <span style={{ fontSize: 12, color: '#d48806' }}>多余 {stats.extra} 字</span>
+                      )}
+                      {stats.missing === 0 && stats.extra === 0 && (
+                        <span style={{ fontSize: 12, color: '#52c41a' }}>完全一致</span>
+                      )}
+                    </div>
+                  );
+                })()}
+
+                {/* 双行对比 */}
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <FileTextOutlined style={{ color: getSimilarityColor(file.similarity), fontSize: 18, flexShrink: 0, marginTop: 2 }} />
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6, marginBottom: 4 }}>
+                      <span style={{ fontSize: 10, color: '#ff4d4f', background: '#fff1f0', borderRadius: 3, padding: '0 5px', lineHeight: '16px', flexShrink: 0 }}>标题</span>
+                      <span style={{ fontSize: 15, color: '#666', wordBreak: 'break-all', lineHeight: '22px' }}>
+                        {renderSourceDiff(matchTitle, file.nameWithoutExt)}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 6 }}>
+                      <span style={{ fontSize: 10, color: '#389e0d', background: '#f6ffed', borderRadius: 3, padding: '0 5px', lineHeight: '16px', flexShrink: 0 }}>文件</span>
+                      <span style={{ fontSize: 15, fontWeight: 500, wordBreak: 'break-all', lineHeight: '22px' }}>
+                        {renderTargetDiff(matchTitle, file.nameWithoutExt)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 第二行：相似度条 */}
+                <div style={{ marginTop: 8, height: 4, borderRadius: 2, background: '#f0f0f0', overflow: 'hidden' }}>
+                  <div style={{
+                    height: '100%',
+                    width: `${Math.round(file.similarity * 100)}%`,
+                    background: `linear-gradient(90deg, ${getSimilarityColor(file.similarity)}88, ${getSimilarityColor(file.similarity)})`,
+                    borderRadius: 2,
+                    transition: 'width 0.6s ease',
+                  }} />
+                </div>
+
+                {/* 第三行：重命名输入 or 路径 */}
+                {renamingIdx === idx ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8 }}>
+                    <Input
+                      size="small"
+                      value={renameValue}
+                      onChange={e => setRenameValue(e.target.value)}
+                      onPressEnter={() => handleSaveRename(idx)}
+                      style={{ flex: 1, fontSize: 12 }}
+                      suffix={<Text type="secondary" style={{ fontSize: 11 }}>{file.fileName.substring(file.nameWithoutExt.length)}</Text>}
+                      autoFocus
+                    />
+                    <Button
+                      type="primary"
+                      size="small"
+                      icon={<SaveOutlined />}
+                      loading={renameLoading}
+                      onClick={() => handleSaveRename(idx)}
+                    >
+                      保存
+                    </Button>
+                    <Button
+                      size="small"
+                      icon={<CloseCircleOutlined />}
+                      onClick={handleCancelRename}
+                    />
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
+                    <Tooltip title={file.filePath}>
+                      <Text type="secondary" style={{ fontSize: 11, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 520 }}>
+                        {file.filePath}
+                      </Text>
+                    </Tooltip>
+                    <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                      <Button
+                        type="link"
+                        size="small"
+                        icon={<EditOutlined />}
+                        style={{ fontSize: 12, padding: 0 }}
+                        onClick={() => handleStartRename(idx)}
+                      >
+                        修改文件名
+                      </Button>
+                      <Button
+                        type="link"
+                        size="small"
+                        icon={<AimOutlined />}
+                        style={{ fontSize: 12, padding: 0 }}
+                        onClick={() => handleRevealFile(file.filePath)}
+                      >
+                        在 Finder 中显示
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };
