@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Card, Input, DatePicker, Button, Tag, Image, Typography, Pagination, Spin, Empty, Avatar, Tooltip, message, Select, Modal } from 'antd';
+import { Card, Input, DatePicker, Button, Tag, Image, Typography, Pagination, Spin, Empty, Avatar, Tooltip, message, Select, Modal, Upload } from 'antd';
 import {
   SearchOutlined,
   ReloadOutlined,
@@ -21,6 +21,7 @@ import {
   SaveOutlined,
   CloseCircleOutlined,
   AimOutlined,
+  FileExcelOutlined,
 } from '@ant-design/icons';
 import axios from 'axios';
 import dayjs from 'dayjs';
@@ -175,6 +176,10 @@ const NovelList: React.FC = () => {
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
   const [bjhOptions, setBjhOptions] = useState<{ value: string; label: string }[]>([]);
 
+  // NID 文件过滤相关
+  const [nidFilter, setNidFilter] = useState<string[]>([]);
+  const [nidFileName, setNidFileName] = useState('');
+
   // 匹配文件相关
   const [matchModalOpen, setMatchModalOpen] = useState(false);
   const [matchLoading, setMatchLoading] = useState(false);
@@ -184,7 +189,7 @@ const NovelList: React.FC = () => {
   const [renameValue, setRenameValue] = useState('');
   const [renameLoading, setRenameLoading] = useState(false);
 
-  const fetchData = useCallback(async (page = 1, pageSize = 10, overrideSort?: { field: string; order: string }) => {
+  const fetchData = useCallback(async (page = 1, pageSize = 10, overrideSort?: { field: string; order: string }, overrideNids?: string[]) => {
     setLoading(true);
     try {
       const params: Record<string, any> = {
@@ -198,6 +203,9 @@ const NovelList: React.FC = () => {
       if (syncStatus) params.sync_status = syncStatus;
       if (dateRange?.[0]) params.start_date = dateRange[0].format('YYYY-MM-DD');
       if (dateRange?.[1]) params.end_date = dateRange[1].format('YYYY-MM-DD');
+      // NID 文件过滤
+      const activeNids = overrideNids ?? nidFilter;
+      if (activeNids.length > 0) params.nids = activeNids.join(',');
 
       const res = await axios.get(`${LOCAL_API}/novels/list`, { params });
       if (res.data.code === 10000) {
@@ -209,7 +217,7 @@ const NovelList: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [keyword, appId, syncStatus, dateRange, sortField, sortOrder]);
+  }, [keyword, appId, syncStatus, dateRange, sortField, sortOrder, nidFilter]);
 
   useEffect(() => {
     fetchData();
@@ -231,6 +239,8 @@ const NovelList: React.FC = () => {
     setDateRange(null);
     setSortField('publish_time');
     setSortOrder('desc');
+    setNidFilter([]);
+    setNidFileName('');
     setLoading(true);
     try {
       const res = await axios.get(`${LOCAL_API}/novels/list`, { params: { page: 1, page_size: 10, sort_field: 'publish_time', sort_order: 'desc' } });
@@ -243,6 +253,38 @@ const NovelList: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  /** 上传文件到后端解析 NID 列（支持 CSV 和 Excel） */
+  const handleNidFileUpload = async (file: File) => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await axios.post(`${LOCAL_API}/novels/parse-nid-file`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      if (res.data.code === 10000) {
+        const { nids, count, total } = res.data.data;
+        setNidFilter(nids);
+        setNidFileName(file.name);
+        const dupInfo = total > count ? `（原始 ${total} 条，去重 ${total - count} 条）` : '';
+        message.success(`已加载 ${count} 个 NID 过滤条件${dupInfo}`);
+        fetchData(1, pagination.pageSize, undefined, nids);
+      } else {
+        message.error(res.data.message || '文件解析失败');
+      }
+    } catch (err) {
+      console.error('[NovelList] 上传 NID 文件失败', err);
+      message.error('文件上传失败，请重试');
+    }
+    return false;
+  };
+
+  /** 清除 NID 过滤 */
+  const handleClearNidFilter = () => {
+    setNidFilter([]);
+    setNidFileName('');
+    fetchData(1, pagination.pageSize, undefined, []);
   };
 
   const handleSortFieldChange = (value: string) => {
@@ -398,6 +440,25 @@ const NovelList: React.FC = () => {
               title={sortOrder === 'desc' ? '当前：降序，点击切换升序' : '当前：升序，点击切换降序'}
             />
           </div>
+          <Upload
+            accept=".csv,.tsv,.txt,.xlsx"
+            showUploadList={false}
+            beforeUpload={handleNidFileUpload}
+          >
+            <Tooltip title="上传包含 NID 列的表格文件（CSV / Excel），批量过滤列表">
+              <Button icon={<FileExcelOutlined />}>NID 过滤</Button>
+            </Tooltip>
+          </Upload>
+          {nidFilter.length > 0 && (
+            <Tag
+              color="purple"
+              closable
+              onClose={handleClearNidFilter}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 4, margin: 0, borderRadius: 4, fontSize: 12 }}
+            >
+              <FileExcelOutlined /> {nidFileName}（{nidFilter.length} 个 NID）
+            </Tag>
+          )}
           <Button type="primary" onClick={handleSearch}>查询</Button>
           <Button icon={<ReloadOutlined />} onClick={handleReset}>重置</Button>
         </div>

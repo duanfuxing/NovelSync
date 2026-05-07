@@ -8,7 +8,7 @@ from datetime import datetime
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import config  # 将启动第一时间挂载 dotenv 控制器并执行环境判断
-from fastapi import FastAPI, BackgroundTasks, Request
+from fastapi import FastAPI, BackgroundTasks, Request, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Optional
@@ -412,9 +412,13 @@ def get_novels(
     sort_field: str = "publish_time",
     sort_order: str = "desc",
     sync_status: str = "",
+    nids: str = "",
 ):
     """小说列表分页查询（关联 articles + orders）"""
     try:
+        # 解析逗号分隔的 NID 列表
+        nid_list = [n.strip() for n in nids.split(",") if n.strip()] if nids else []
+
         result = get_novel_list(
             page=page,
             page_size=page_size,
@@ -426,11 +430,171 @@ def get_novels(
             sort_order=sort_order,
             sync_status=sync_status,
             user_phone=get_active_user_phone() or "",
+            nids=nid_list,
         )
         return {"code": 10000, "message": "success", "data": result}
     except Exception as e:
         print(f"[API] 查询小说列表失败: {e}")
         return {"code": 500, "message": f"查询失败: {e}"}
+
+
+@app.post("/novels/parse-nid-file")
+async def parse_nid_file(file: UploadFile = File(...)):
+    """
+    解析上传的 CSV / Excel 文件，提取 NID 列并返回。
+    支持 .csv / .tsv / .txt（文本解析）和 .xlsx（ZIP+XML 标准库解析）。
+    """
+    import csv
+    import zipfile
+    import xml.etree.ElementTree as ET
+
+    try:
+        filename = file.filename or ""
+        ext = os.path.splitext(filename)[1].lower()
+        content = await file.read()
+
+        nids = []
+
+        if ext in (".csv", ".tsv", ".txt"):
+            # 文本格式：自动检测分隔符
+            text = content.decode("utf-8-sig")  # 兼容 BOM
+            lines = text.splitlines()
+            if not lines:
+                return {"code": 400, "message": "文件内容为空"}
+
+            # 检测分隔符
+            sniffer = csv.Sniffer()
+            try:
+                dialect = sniffer.sniff(lines[0], delimiters=",\t;|")
+            except csv.Error:
+                dialect = csv.excel  # fallback
+
+            reader = csv.reader(lines, dialect)
+            headers = [h.strip() for h in next(reader, [])]
+
+            # 查找 NID 列（大小写不敏感）
+            nid_col_idx = -1
+            for i, h in enumerate(headers):
+                if h.upper() == "NID":
+                    nid_col_idx = i
+                    break
+            if nid_col_idx == -1:
+                return {"code": 400, "message": f'未找到 NID 列，当前表头: {", ".join(headers)}'}
+
+            for row in reader:
+                if nid_col_idx < len(row):
+                    val = row[nid_col_idx].strip()
+                    if val:
+                        nids.append(val)
+
+        elif ext in (".xlsx",):
+            # xlsx 解析：ZIP 内的 XML
+            import re
+            from decimal import Decimal, InvalidOperation
+
+            buf = io.BytesIO(content)
+            if not zipfile.is_zipfile(buf):
+                return {"code": 400, "message": "无效的 xlsx 文件"}
+
+            ns = {"s": "http://schemas.openxmlformats.org/spreadsheetml/2006/main"}
+
+            def _col_letter_to_index(col_str: str) -> int:
+                """列字母转数字索引，如 A->0, B->1, Z->25, AA->26"""
+                result = 0
+                for ch in col_str.upper():
+                    result = result * 26 + (ord(ch) - ord('A') + 1)
+                return result - 1
+
+            def _get_col_index(cell_el) -> int:
+                """从单元格的 r 属性(如 'A1', 'BC23')提取列索引"""
+                ref = cell_el.get("r", "")
+                col_letters = re.match(r"([A-Z]+)", ref)
+                return _col_letter_to_index(col_letters.group(1)) if col_letters else -1
+
+            with zipfile.ZipFile(buf) as zf:
+                # 读取共享字符串表（xlsx 中字符串单独存储）
+                shared_strings = []
+                if "xl/sharedStrings.xml" in zf.namelist():
+                    ss_xml = zf.read("xl/sharedStrings.xml")
+                    ss_root = ET.fromstring(ss_xml)
+                    for si in ss_root.findall(".//s:si", ns):
+                        text_parts = [t.text or "" for t in si.findall(".//s:t", ns)]
+                        shared_strings.append("".join(text_parts))
+
+                # 读取第一个 sheet
+                sheet_xml = zf.read("xl/worksheets/sheet1.xml")
+                sheet_root = ET.fromstring(sheet_xml)
+
+                def _cell_value(cell_el) -> str:
+                    """提取单元格的文本值，大数字避免科学计数法"""
+                    v_el = cell_el.find("s:v", ns)
+                    if v_el is None or v_el.text is None:
+                        return ""
+                    cell_type = cell_el.get("t", "")
+                    if cell_type == "s":  # 共享字符串引用
+                        idx = int(v_el.text)
+                        return shared_strings[idx] if idx < len(shared_strings) else ""
+                    # 数字类型：用 Decimal 避免浮点精度丢失（NID 是 18-19 位长数字）
+                    raw = v_el.text
+                    if "E" in raw or "e" in raw or "." in raw:
+                        try:
+                            return str(int(Decimal(raw)))
+                        except (InvalidOperation, ValueError, OverflowError):
+                            pass
+                    return raw
+
+                rows = sheet_root.findall(".//s:sheetData/s:row", ns)
+                if not rows:
+                    return {"code": 400, "message": "Excel 文件中没有数据"}
+
+                # 第一行作为表头：按 r 属性定位真实列索引
+                header_cells = rows[0].findall("s:c", ns)
+                header_map = {}  # col_index -> header_name
+                for c in header_cells:
+                    col_idx = _get_col_index(c)
+                    header_map[col_idx] = _cell_value(c).strip()
+
+                # 查找 NID 列的真实列索引
+                nid_col_idx = -1
+                headers = []
+                for col_idx in sorted(header_map.keys()):
+                    headers.append(header_map[col_idx])
+                    if header_map[col_idx].upper() == "NID":
+                        nid_col_idx = col_idx
+
+                if nid_col_idx == -1:
+                    return {"code": 400, "message": f'未找到 NID 列，当前表头: {", ".join(headers)}'}
+
+                # 读取数据行：按 r 属性精确定位目标列
+                for row_el in rows[1:]:
+                    cells = row_el.findall("s:c", ns)
+                    for c in cells:
+                        if _get_col_index(c) == nid_col_idx:
+                            val = _cell_value(c).strip()
+                            if val:
+                                nids.append(val)
+                            break
+
+        else:
+            return {"code": 400, "message": f"不支持的文件格式: {ext}，请上传 CSV 或 Excel(.xlsx) 文件"}
+
+        if not nids:
+            return {"code": 400, "message": "文件中未解析到有效的 NID"}
+
+        # 去重但保持顺序
+        total_raw = len(nids)
+        seen = set()
+        unique_nids = []
+        for n in nids:
+            if n not in seen:
+                seen.add(n)
+                unique_nids.append(n)
+
+        return {"code": 10000, "message": "success", "data": {"nids": unique_nids, "count": len(unique_nids), "total": total_raw}}
+
+    except Exception as e:
+        print(f"[API] 解析 NID 文件失败: {e}")
+        return {"code": 500, "message": f"文件解析失败: {e}"}
 
 
 @app.get("/novels/match-files")

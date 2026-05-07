@@ -607,6 +607,7 @@ def get_novel_list(
     sort_order: str = "desc",
     sync_status: str = "",
     user_phone: str = "",
+    nids: list[str] = None,
 ) -> dict:
     """
     小说列表分页查询，关联 client_articles + client_orders + client_bjh_cookies
@@ -627,6 +628,9 @@ def get_novel_list(
             ClientArticle.is_pay_subscribe == 1,
             ClientArticle.user_phone == user_phone,
         )
+        # 上传表格文件的 NID 批量过滤
+        if nids:
+            base_query = base_query.where(ClientArticle.nid.in_(nids))
         if keyword:
             from sqlalchemy import or_
             base_query = base_query.where(or_(
