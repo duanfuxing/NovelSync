@@ -9,7 +9,9 @@ class ArticleSyncWorker(BaseWorker):
     interval = config.WORKER_INTERVAL_ARTICLE_SYNC
 
     def process(self):
-        print("[ArticleSync] 开启定时文章同步任务...")
+        force_full = self._trigger_kwargs.get("force_full", False)
+        mode_label = "全量（强制）" if force_full else "增量"
+        print(f"[ArticleSync] 开启定时文章同步任务... 模式: {mode_label}")
 
         user_phone = get_active_user_phone()
         if not user_phone:
@@ -30,7 +32,7 @@ class ArticleSyncWorker(BaseWorker):
                 continue
 
             try:
-                start_date, end_date = self._calc_date_range(bjh_id, user_phone)
+                start_date, end_date = self._calc_date_range(bjh_id, user_phone, force_full=force_full)
                 client = BaijiahaoClient(cookie_str)
                 print(f"[ArticleSync] 正在抓取百家号文章: {bjh_name} (范围: {start_date or '全量'} ~ {end_date or '至今'})")
                 
@@ -48,7 +50,9 @@ class ArticleSyncWorker(BaseWorker):
         print("[ArticleSync] 本轮同步完成。")
 
     @staticmethod
-    def _calc_date_range(app_id: str = "", user_phone: str = "") -> tuple[str, str]:
+    def _calc_date_range(app_id: str = "", user_phone: str = "", force_full: bool = False) -> tuple[str, str]:
+        if force_full:
+            return "", ""
         latest_date = get_latest_article_date(app_id, user_phone=user_phone)
         if latest_date:
             end_date = datetime.now().strftime("%Y-%m-%d")

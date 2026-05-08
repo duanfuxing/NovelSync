@@ -12,10 +12,40 @@ struct SidecarState(Mutex<Option<CommandChild>>);
 fn kill_sidecar(state: &SidecarState) {
     if let Ok(mut guard) = state.0.lock() {
         if let Some(child) = guard.take() {
-            println!("[Tauri] Killing sidecar process...");
-            match child.kill() {
-                Ok(_) => println!("[Tauri] Sidecar process killed successfully"),
-                Err(e) => eprintln!("[Tauri] Failed to kill sidecar: {}", e),
+            let pid = child.pid();
+            println!("[Tauri] Killing sidecar process (PID={})...", pid);
+
+            // Windows: 用 taskkill /F /T 杀整个进程树，防止子进程残留
+            #[cfg(target_os = "windows")]
+            {
+                let result = std::process::Command::new("taskkill")
+                    .args(["/F", "/T", "/PID", &pid.to_string()])
+                    .output();
+                match result {
+                    Ok(output) => {
+                        if output.status.success() {
+                            println!("[Tauri] Sidecar process tree killed successfully");
+                        } else {
+                            let stderr = String::from_utf8_lossy(&output.stderr);
+                            eprintln!("[Tauri] taskkill stderr: {}", stderr);
+                            // fallback: 尝试直接 kill
+                            let _ = child.kill();
+                        }
+                    }
+                    Err(e) => {
+                        eprintln!("[Tauri] Failed to run taskkill: {}, fallback to child.kill()", e);
+                        let _ = child.kill();
+                    }
+                }
+            }
+
+            // macOS / Linux: 直接 kill 即可（单进程）
+            #[cfg(not(target_os = "windows"))]
+            {
+                match child.kill() {
+                    Ok(_) => println!("[Tauri] Sidecar process killed successfully"),
+                    Err(e) => eprintln!("[Tauri] Failed to kill sidecar: {}", e),
+                }
             }
         }
     }

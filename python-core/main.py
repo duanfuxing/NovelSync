@@ -23,24 +23,32 @@ def _watch_parent_process():
     ppid = os.getppid()
     print(f"[Main] 父进程监控已启动 (parent PID={ppid})")
 
-    while True:
-        time.sleep(2)
-        try:
-            if sys.platform == "win32":
-                # Windows: 用 ctypes 调 OpenProcess 检测进程是否存在
-                import ctypes
-                kernel32 = ctypes.windll.kernel32
-                SYNCHRONIZE = 0x00100000
-                handle = kernel32.OpenProcess(SYNCHRONIZE, False, ppid)
-                if handle == 0:
-                    # 进程不存在
-                    break
-                kernel32.CloseHandle(handle)
-            else:
-                # macOS / Linux: 发 signal 0 检测进程是否存在
+    if sys.platform == "win32":
+        import ctypes
+        kernel32 = ctypes.windll.kernel32
+        SYNCHRONIZE = 0x00100000
+        WAIT_OBJECT_0 = 0x00000000
+        # 一次性打开句柄，循环内用 WaitForSingleObject 检测
+        handle = kernel32.OpenProcess(SYNCHRONIZE, False, ppid)
+        if handle == 0:
+            print(f"[Main] 无法获取父进程句柄，sidecar 自行终止")
+            os._exit(0)
+
+        while True:
+            # 等待 2 秒，如果父进程退出则返回 WAIT_OBJECT_0
+            result = kernel32.WaitForSingleObject(handle, 2000)
+            if result == WAIT_OBJECT_0:
+                break
+
+        kernel32.CloseHandle(handle)
+    else:
+        # macOS / Linux: 发 signal 0 检测进程是否存在
+        while True:
+            time.sleep(2)
+            try:
                 os.kill(ppid, 0)
-        except (OSError, ProcessLookupError):
-            break
+            except (OSError, ProcessLookupError):
+                break
 
     print(f"[Main] 父进程 (PID={ppid}) 已退出，sidecar 自行终止")
     os._exit(0)

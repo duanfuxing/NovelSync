@@ -17,6 +17,7 @@ class BaseWorker(abc.ABC):
         self._wake_event = threading.Event()
         self._thread: threading.Thread | None = None
         self._running = False
+        self._trigger_kwargs: dict = {}
 
     @abc.abstractmethod
     def process(self):
@@ -34,8 +35,9 @@ class BaseWorker(abc.ABC):
         self._running = False
         self._wake_event.set()  # 唤醒使其退出循环
 
-    def trigger(self):
-        """外部手动触发：立即唤醒线程执行一次"""
+    def trigger(self, **kwargs):
+        """外部手动触发：立即唤醒线程执行一次，可传参供 process() 读取"""
+        self._trigger_kwargs = kwargs
         self._wake_event.set()
 
     def _run_loop(self):
@@ -52,6 +54,7 @@ class BaseWorker(abc.ABC):
                 update_worker_status(worker_name, "running")
                 self.process()
                 update_worker_status(worker_name, "sleeping")
+                self._trigger_kwargs = {}  # 执行完毕清空触发参数
             except Exception as e:
                 update_worker_status(worker_name, "error", str(e)[:200])
                 print(f"[{worker_name}] 异常: {e}")

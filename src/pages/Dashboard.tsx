@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Typography, Tag, Row, Col, Statistic, Spin, Button, message } from 'antd';
+import { Card, Typography, Tag, Row, Col, Statistic, Spin, Button, message, Dropdown } from 'antd';
 import {
   IdcardOutlined,
   FileTextOutlined,
@@ -9,6 +9,8 @@ import {
   ClockCircleOutlined,
   ExclamationCircleFilled,
   ThunderboltOutlined,
+  DownOutlined,
+  HistoryOutlined,
 } from '@ant-design/icons';
 import axios from 'axios';
 
@@ -62,12 +64,14 @@ const Dashboard: React.FC = () => {
   const [triggering, setTriggering] = useState<string | null>(null);
   const [now, setNow] = useState(Date.now());
 
-  const triggerWorker = async (workerName: string) => {
+  const triggerWorker = async (workerName: string, forceFull: boolean = false) => {
     setTriggering(workerName);
     try {
-      const res = await axios.post(`${LOCAL_API}/workers/trigger?worker_name=${workerName}`);
+      const params = new URLSearchParams({ worker_name: workerName });
+      if (forceFull) params.append('force_full', 'true');
+      const res = await axios.post(`${LOCAL_API}/workers/trigger?${params.toString()}`);
       if (res.data.code === 10000) {
-        message.success(`${WORKER_LABEL_MAP[workerName] ?? workerName} 已触发`);
+        message.success(res.data.message || `${WORKER_LABEL_MAP[workerName] ?? workerName} 已触发`);
       } else {
         message.error(res.data.message);
       }
@@ -250,18 +254,52 @@ const Dashboard: React.FC = () => {
                   })()}
 
                   {/* 操作按钮 */}
-                  <Button
-                    size="small"
-                    type="primary"
-                    ghost
-                    icon={<ThunderboltOutlined />}
-                    loading={triggering === w.workerName}
-                    onClick={() => triggerWorker(w.workerName)}
-                    style={{ fontSize: 12, height: 28 }}
-                    block
-                  >
-                    立即同步
-                  </Button>
+                  {['ArticleSyncWorker', 'OrderSyncWorker'].includes(w.workerName) ? (
+                    <Dropdown
+                      menu={{
+                        items: [
+                          {
+                            key: 'incremental',
+                            icon: <ThunderboltOutlined />,
+                            label: '增量同步',
+                            onClick: () => triggerWorker(w.workerName),
+                          },
+                          {
+                            key: 'full',
+                            icon: <HistoryOutlined />,
+                            label: '全量同步（历史全部）',
+                            onClick: () => triggerWorker(w.workerName, true),
+                          },
+                        ],
+                      }}
+                      trigger={['click']}
+                    >
+                      <Button
+                        size="small"
+                        type="primary"
+                        ghost
+                        icon={<ThunderboltOutlined />}
+                        loading={triggering === w.workerName}
+                        style={{ fontSize: 12, height: 28 }}
+                        block
+                      >
+                        立即同步 <DownOutlined style={{ fontSize: 10, marginLeft: 2 }} />
+                      </Button>
+                    </Dropdown>
+                  ) : (
+                    <Button
+                      size="small"
+                      type="primary"
+                      ghost
+                      icon={<ThunderboltOutlined />}
+                      loading={triggering === w.workerName}
+                      onClick={() => triggerWorker(w.workerName)}
+                      style={{ fontSize: 12, height: 28 }}
+                      block
+                    >
+                      立即同步
+                    </Button>
+                  )}
                 </div>
               </Col>
             );

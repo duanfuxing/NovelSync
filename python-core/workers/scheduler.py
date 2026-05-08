@@ -27,11 +27,11 @@ class WorkerScheduler:
             worker.stop()
             print(f"[Scheduler] {name} 已停止")
 
-    def trigger(self, worker_name: str) -> bool:
+    def trigger(self, worker_name: str, **kwargs) -> bool:
         """手动触发指定 Worker 立即执行"""
         worker = self._workers.get(worker_name)
         if worker:
-            worker.trigger()
+            worker.trigger(**kwargs)
             return True
         return False
 

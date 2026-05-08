@@ -1,0 +1,1211 @@
+{
+    "GcmsLastUpVersion": 1761267689342205,
+    "abstract": "丈夫出差15天回来，兴师问罪：你为什么一个电话都不打？我平静回复：打了，是你小女友和女儿接的电话，他顿时脸色惨白",
+    "ai_generated_type": 0,
+    "ai_video_detection": {
+        "asr_score": 0,
+        "label": 1,
+        "tts_score_all": [],
+        "tts_score_avg": 0
+    },
+    "aigc_audittype": 2,
+    "aigc_for_search": -1,
+    "aigc_from": 30,
+    "aigc_generate_type": "AutoGenVideoPPTStory",
+    "aigc_resource": 1,
+    "aigc_type": 0,
+    "antispam_bert_results": {
+        "asr": {
+            "contact": 0.054949212819338,
+            "insult": 0.12687481939793,
+            "obscene": 0.06660158932209,
+            "politics": 0.014735030010343,
+            "toxic": 0.21102660894394
+        },
+        "cover_ocr": {
+            "contact": 0.0028180098161101,
+            "insult": 0.00062674598302692,
+            "obscene": 0.004135875031352,
+            "politics": 0.0014485336141661,
+            "toxic": 0.0090291500091553
+        },
+        "ocr": {
+            "contact": 0.51571142673492,
+            "insult": 0.068461872637272,
+            "obscene": 0.39328810572624,
+            "politics": 0.013611072674394,
+            "toxic": 0.61594793200493
+        },
+        "title": {
+            "contact": 0.010313355363905,
+            "insult": 0.0066867778077722,
+            "obscene": 0.026153417304158,
+            "politics": 0.0045983791351318,
+            "toxic": 0.047751843929291
+        }
+    },
+    "antispam_gamble": {
+        "is_evidence": 1.3731939816353e-6,
+        "is_gamble": 9.8654413704935e-7,
+        "is_normal": 0.99999225139618,
+        "is_porn": 3.7764759781567e-6,
+        "is_rule": 1.6998794762912e-6,
+        "is_video_evidence": 1.1472117193989e-6,
+        "is_video_gamble": 9.784813528313e-7,
+        "is_video_normal": 0.9999932050705,
+        "is_video_porn": 3.2248262868961e-6,
+        "is_video_rule": 1.4674448038932e-6,
+        "video_ocr_repeat": 0.012931034482759
+    },
+    "antispam_variant": {
+        "asr_contact_hit_text": "差的时间恰好定在六月一日，这一",
+        "asr_score_contact": 1.4252829316774e-7,
+        "asr_score_website": 6.056029011603e-9,
+        "asr_website_hit_text": "差的时间恰好定在六月一日，这一",
+        "contact_hit_para_id": "cros_vert_img_ocr",
+        "contact_hit_text": "0",
+        "hit_words": "",
+        "score_contact": 0.00092236169439275,
+        "score_website": 1.2487562539576e-8,
+        "title_contact_hit_text": "丈夫出差15天回来，兴师问罪：",
+        "title_score_contact": 5.5414922428554e-8,
+        "title_score_website": 7.8669692982203e-9,
+        "title_uniq_char": "",
+        "title_uniq_char_num": 0,
+        "title_uniq_char_ratio": 0,
+        "title_website_hit_text": "丈夫出差15天回来，兴师问罪：",
+        "video_ocr_contact_hit_para_id": 26,
+        "video_ocr_contact_hit_text": "Jf3966016119151",
+        "video_ocr_website_hit_para_id": 54,
+        "video_ocr_website_hit_text": "上天三业航班CA12341:1",
+        "video_score_contact": 2.1151277707077e-7,
+        "video_score_website": 3.5586691815581e-8,
+        "website_hit_para_id": "cros_vert_img_ocr",
+        "website_hit_text": "0"
+    },
+    "app_id": "1824729771824144",
+    "article_id": "12677205385425394762",
+    "asr_url": "http://feed-thumbnail-cache.bj.bcebos.com/com_fore_server/Asr/vd3.bdstatic.com/mda-rjnku1bui6tjbf6y/540p/h264_cae/1761230519787013431/mda-rjnku1bui6tjbf6y.mp4/PUT_ASR_FULL.txt",
+    "audit_msg": "",
+    "audit_raw_msg": "",
+    "audit_status_info": {
+        "last_audit_time": 1761267873,
+        "last_quality_audit_time": 1761267873,
+        "last_quality_work_type": "qm",
+        "last_safe_audit_time": 1761267810,
+        "last_safe_work_type": "sm",
+        "last_work_type": "qm",
+        "qm_info": {
+            "audit_reason": "质量机审$$质量机审通过",
+            "audit_time": 1761267873,
+            "status": 1,
+            "status_type": "质量"
+        },
+        "quality_audit_reason": "质量机审$$质量机审通过",
+        "quality_status": 1,
+        "safe_audit_reason": "安全机审$$安全机审通过",
+        "safe_status": 1,
+        "sm_info": {
+            "audit_reason": "安全机审$$安全机审通过",
+            "audit_time": 1761267810,
+            "status": 1,
+            "status_type": "安全"
+        }
+    },
+    "auditing_status": 0,
+    "auditing_type": 0,
+    "authentication_type": "名人",
+    "author_brand_info": {
+        "author_brand_level": 2,
+        "sv_author_brand_level": 2
+    },
+    "author_brand_level": 2,
+    "author_new_level": -1,
+    "author_overall_level": 2,
+    "avi_audit_info": {
+        "109887": {
+            "create_time": 1761267873,
+            "reason": "strategy_pass_109887",
+            "send_times": 1,
+            "time": 1761267873
+        },
+        "rule": {
+            "create_time": 1761267810,
+            "reason": "strategy_pass_rule",
+            "send_times": 1,
+            "time": 1761267810
+        }
+    },
+    "baidu_label": {
+        "baidu_acgccb": 0,
+        "baidu_acgccb2": 0,
+        "baidu_appsearch": 0,
+        "baidu_baikenew": 1,
+        "baidu_bdhsh": 0,
+        "baidu_comHealth": 0,
+        "baidu_health": 1,
+        "baidu_idgcar": 0,
+        "baidu_lvlinlaw": 0,
+        "baidu_mapAI": 1,
+        "baidu_netdisk": 0,
+        "baidu_output": 0,
+        "baidu_shangpin": 1,
+        "baidu_zlax": 0,
+        "hengduan23ji": 0
+    },
+    "bg_sound_rec": "https://vd3.bdstatic.com/mda-rjnku1bui6tjbf6y/audio_mp3/1761230519690319405/mda-rjnku1bui6tjbf6y.m4a",
+    "biji_source_from": "youzhi_author_auto",
+    "biserial_ext_info": {
+        "detail": "",
+        "image_check_score": "2",
+        "is_low": "0"
+    },
+    "bjh_distribution_channel": 2,
+    "bjh_distribution_version": 1761267687,
+    "bjh_trace_id": 3898473309,
+    "black_gambling": 0,
+    "black_production": {
+        "black_production_score": 0,
+        "normal_score": 1
+    },
+    "can_reward": 0,
+    "cate_v4_top3": {
+        "动漫_动画短片": 0.28672802448273,
+        "情感_两性": 0.10836332291365,
+        "文化_文化综合": 0.12246072292328
+    },
+    "category_v1_backup": {
+        "micro_cate_mul": [],
+        "micro_sub_cate_mul": [],
+        "vis_category": ""
+    },
+    "category_v4": "动漫",
+    "clickbait_level_v2": 0,
+    "commit_at": "2025-10-24 09:01:29",
+    "commit_ip": "",
+    "commit_ip_dual": "",
+    "content_antispam": {
+        "comment_porn": {
+            "comment_porn_score": 0.00045890311594121,
+            "success_rate": 1
+        },
+        "leader_content_model": {
+            "extra_info": [
+                {
+                    "para_index": "cover_ocr"
+                }
+            ],
+            "score": {
+                "danger": 0.013396359339822,
+                "leader": 0.0071519631892443,
+                "leader_plus_possible": 0.012627620249987,
+                "leader_possible": 0.0054756570607424,
+                "sensitive": 0.00076873908983544
+            }
+        },
+        "leader_content_model_v2": [
+            {
+                "desc": "leader",
+                "position": {
+                    "para_index": "ocr"
+                },
+                "score": 1.8244076272822e-5,
+                "type": 1
+            },
+            {
+                "desc": "leader_possible",
+                "position": {
+                    "para_index": "ocr"
+                },
+                "score": 4.5870412577642e-5,
+                "type": 1
+            },
+            {
+                "desc": "sensitive",
+                "position": {
+                    "para_index": "ocr"
+                },
+                "score": 2.3384607629851e-5,
+                "type": 1
+            },
+            {
+                "desc": "leader_plus_possible",
+                "position": {
+                    "para_index": "ocr"
+                },
+                "score": 6.4114488850464e-5,
+                "type": 1
+            },
+            {
+                "desc": "danger",
+                "position": {
+                    "para_index": "ocr"
+                },
+                "score": 8.7499096480315e-5,
+                "type": 1
+            }
+        ],
+        "leader_content_model_v2_simple": {
+            "danger": 8.7499096480315e-5,
+            "leader": 1.8244076272822e-5,
+            "leader_plus_possible": 6.4114488850464e-5,
+            "leader_possible": 4.5870412577642e-5,
+            "sensitive": 2.3384607629851e-5
+        },
+        "leader_variant_model": {
+            "extra_info": [
+                {
+                    "para_index": "cover_ocr"
+                }
+            ],
+            "score": 0.028239188715816
+        },
+        "medical_content_detect": {
+            "critical_disease_label": 0.0012572100386024,
+            "medical_label_score": 0.00058701989473775
+        },
+        "political_toxicity": {
+            "content_poli_toxic_score": 0.0089729623869061,
+            "pugc_ocr_poli_toxic_score": 0
+        },
+        "text_party_building": {
+            "score_average": 0.0074501299130698,
+            "score_max": 0.04501585662365
+        },
+        "xi_title_error": {
+            "error_info": [],
+            "has_error": 0,
+            "is_delete": 0
+        },
+        "xi_title_error_v2": {
+            "info": "",
+            "is_hit": 0,
+            "para_index": ""
+        }
+    },
+    "content_feature_result": [
+        {
+            "feature": "microporndetect",
+            "status": 0
+        },
+        {
+            "feature": "microsensitivecheck",
+            "status": 1
+        },
+        {
+            "feature": "xiwrongtitle",
+            "status": 0
+        }
+    ],
+    "content_locations": [],
+    "cover_images": "[{\"src\":\"http:\\/\\/f7.baidu.com\\/it\\/u=2673177338,1529201009&fm=222&app=106&f=JPEG?w=1072&h=603&s=8FB37D85568F50FA02BD98170300D061\"}]",
+    "cover_layout": "one",
+    "cover_upload_type": 1,
+    "covered_fields_for_report": [
+        "video_ad_type"
+    ],
+    "created_at": "2025-10-24 09:01:29",
+    "crosswise_cover": "http://f7.baidu.com/it/u=2673177338,1529201009&fm=222&app=106&f=JPEG?w=1072&h=603&s=8FB37D85568F50FA02BD98170300D061",
+    "crosswise_cover_type": 0,
+    "deputy_audit_flag": "true",
+    "displaytype_exinfo": "{\"uid\":\"6796367204\",\"sourceid\":3000104,\"name\":\"一纸流年\",\"display_name\":\"一纸流年\",\"https_avatar\":\"https://avatar.bdstatic.com/it/u=1562252329,872257246&fm=3012&app=3012&autime=1761266385&size=b200,200\",\"http_avatar\":\"http://avatar.bdstatic.com/it/u=1562252329,872257246&fm=3012&app=3012&autime=1761266385&size=b200,200\",\"authentication_type\":\"名人\",\"source\":\"ugc_baijiahao\",\"is_authenticated\":\"0\",\"app_id\":\"1824729771824144\",\"source_from\":\"vsv_bjh_pc\",\"ugcvideo\":{\"feed_id\":\"7989794942357742452\"},\"play_http\":\"http://vd3.bdstatic.com/mda-rjnku1bui6tjbf6y/540p/h264_cae/1761230519787013431/mda-rjnku1bui6tjbf6y.mp4\",\"cate1\":\"\",\"cate2\":\"\",\"tag\":\"\",\"video_info\":{\"durationInSecond\":255,\"fileSizeInByte\":21498442,\"heightInPixel\":960,\"widthInPixel\":540},\"long\":255,\"mediaId\":\"mda-rjnku1bui6tjbf6y\",\"set_id\":null,\"recommend_is_free\":null,\"distribution_special\":null,\"channel\":\"ugc\",\"uk\":\"4StFuhMEuqQoJvSLm38QtA\",\"data_type\":\"5\",\"play_https\":\"https://vd3.bdstatic.com/mda-rjnku1bui6tjbf6y/540p/h264_cae/1761230519787013431/mda-rjnku1bui6tjbf6y.mp4\"}",
+    "distribute_scenes": [
+        "shoubai"
+    ],
+    "downloadVideoInfoExt": "{\"shoubai\":{\"vodMoovSize\":133382,\"vodVideoDuration\":255,\"shoubaiUrlHttps\":\"https://vd3.bdstatic.com/mda-rjnku1bui6tjbf6y/720p_shoubai/h264_sblogo/1761230519761230551/mda-rjnku1bui6tjbf6y.mp4\",\"shoubaiUrlHttp\":\"http://vd3.bdstatic.com/mda-rjnku1bui6tjbf6y/720p_shoubai/h264_sblogo/1761230519761230551/mda-rjnku1bui6tjbf6y.mp4\",\"vodVideoSize\":20713246,\"vodVideoBps\":649830,\"vodVideoRate\":30,\"vodVideoHW\":\"1280$$720\"},\"haokan\":{\"vodMoovSize\":133474,\"vodVideoDuration\":255,\"haokanUrlHttps\":\"https://vd3.bdstatic.com/mda-rjnku1bui6tjbf6y/720p_haokan/h264_hklogo/1761230519856449184/mda-rjnku1bui6tjbf6y.mp4\",\"haokanUrlHttp\":\"http://vd3.bdstatic.com/mda-rjnku1bui6tjbf6y/720p_haokan/h264_hklogo/1761230519856449184/mda-rjnku1bui6tjbf6y.mp4\",\"vodVideoSize\":22022126,\"vodVideoBps\":690892,\"vodVideoRate\":30,\"vodVideoHW\":\"1280$$720\"}}",
+    "duplicate_abstract": {
+        "duplicate_nids": [],
+        "duplicate_num": 0,
+        "merge_nids": [
+            "9911281323631251066",
+            "9463557667594487849",
+            "9830533924189680172",
+            "9422795893841774974",
+            "10349201643786048031"
+        ]
+    },
+    "duplicate_count_info": {
+        "micro_video": 3,
+        "short_video": 0
+    },
+    "duplicate_list_micro_with_audio": [
+        {
+            "ac": 0.038461539894342,
+            "sc": 0.68888890743256,
+            "sv": "8422434204637085536",
+            "tp": 0.04980842769146
+        },
+        {
+            "ac": 0,
+            "sc": 0.65555554628372,
+            "sv": "4835602185212614886",
+            "tp": 0.02316602319479
+        },
+        {
+            "ac": 0,
+            "sc": 0.56000000238419,
+            "sv": "5016574673768299413",
+            "tp": 0.023076923564076
+        }
+    ],
+    "duplist": "{\"timestamp\":1761267771,\"list\":[]}",
+    "dynamic_img": "",
+    "face_comparion_finger": [],
+    "face_url": "http://feed-thumbnail-cache.bj.bcebos.com/com_fore_server/FaceShortTerm/3314818892030903695/PUT_FACE_1FPS.txt",
+    "feed_id": "5122218040096410333",
+    "feed_signal": 2,
+    "feudal_superstition_info": {
+        "feudal_superstition": 0,
+        "religion": 0,
+        "score": [
+            0.00035,
+            0.00018
+        ]
+    },
+    "file_name": "862d5c0e4416328b6e795e2b457676d8",
+    "first_approved_time": 1761267812,
+    "first_frame_url": "http://feed-thumbnail-cache.bj.bcebos.com/com_fore_server/frame_1fps/vd3.bdstatic.com/mda-rjnku1bui6tjbf6y/540p/h264_cae/1761230519787013431/mda-rjnku1bui6tjbf6y.mp4/img_0.jpg",
+    "first_storage_time": 1761267689,
+    "frame_sprites": {
+        "image_urls": [
+            "http://gips0.baidu.com/it/u=1089708786,2455514996&fm=3021&app=3021&f=JPEG?w=1470&h=2610",
+            "http://gips1.baidu.com/it/u=3349928651,2396578187&fm=3021&app=3021&f=JPEG?w=1470&h=2610",
+            "http://gips3.baidu.com/it/u=2949509896,1657423760&fm=3021&app=3021&f=JPEG?w=1470&h=2610"
+        ],
+        "interval": 1,
+        "media_url": "http://vd3.bdstatic.com/mda-rjnku1bui6tjbf6y/540p/h264_cae/1761230519787013431/mda-rjnku1bui6tjbf6y.mp4",
+        "x_len": 10,
+        "x_size": 147,
+        "y_len": 10,
+        "y_size": 261
+    },
+    "future_timeline_review_flag": 0,
+    "has_black_screen": 0,
+    "health_label": 0,
+    "heiku_info": "{\"simi_list\":[],\"image_simi_list\":[],\"cover_image_simi_list\":[],\"playlet_simi_list\":[],\"simi_num\":0,\"playlet_simi_num\":0}",
+    "heiku_status_result": "[{\"feature\":\"video\",\"status\":0},{\"feature\":\"content_image\",\"status\":0},{\"feature\":\"cover_image\",\"status\":0}]",
+    "id": "12677205385425394762",
+    "image_cropinfo": {
+        "biserial": {
+            "heic_url": "http://pics5.baidu.com/feed/91ef76c6a7efce1b92e2565f85865aceb68f6545.heic?token=31940f40ac9f9be8f6f5fc914f263e6f",
+            "height": 757,
+            "original": "http://baidu-aigc.cdn.bcebos.com/task/bb98577530bc68d3b152218867351f7c08d3a63b.jpg?for=bg",
+            "pic_url": "http://pics7.baidu.com/feed/91ef76c6a7efce1b92e2565f85865aceb68f6545.jpeg?token=6705c20526dc2daa9f63a9083a69773b",
+            "src": "http://pics7.baidu.com/feed/91ef76c6a7efce1b92e2565f85865aceb68f6545.jpeg?token=6705c20526dc2daa9f63a9083a69773b",
+            "webp_url": "http://pics5.baidu.com/feed/91ef76c6a7efce1b92e2565f85865aceb68f6545.webp?token=a5e67760e3ff87ed31a377dd59034eca",
+            "width": 568
+        },
+        "size_r1_1": {
+            "cropInfo": "{\"face_trunc_score\":1,\"face_trunc_flag\":0,\"collages_flag\":0,\"bggen_crop_flag\":0,\"word_trunc_flag\":0}",
+            "heic_url": "http://pics5.baidu.com/feed/9825bc315c6034a88b4f7914e1c4e0440b2376da.heic?token=19217604731f7658abb93ecf0109bed2",
+            "height": 558,
+            "original": "http://baidu-aigc.cdn.bcebos.com/task/bb98577530bc68d3b152218867351f7c08d3a63b.jpg?for=bg",
+            "pic_url": "http://pics0.baidu.com/feed/9825bc315c6034a88b4f7914e1c4e0440b2376da.jpeg?token=056458fe131bde18c1b6a5e95b4d40c5",
+            "src": "http://pics0.baidu.com/feed/9825bc315c6034a88b4f7914e1c4e0440b2376da.jpeg?token=056458fe131bde18c1b6a5e95b4d40c5",
+            "webp_url": "http://pics5.baidu.com/feed/9825bc315c6034a88b4f7914e1c4e0440b2376da.webp?token=5993dedd68ce8ac756a636a894f6b872",
+            "width": 558
+        },
+        "size_r3_4": {
+            "cropInfo": "{\"face_trunc_score\":0,\"face_trunc_flag\":0,\"collages_flag\":0,\"bggen_crop_flag\":0,\"word_trunc_flag\":0}",
+            "heic_url": "http://pics4.baidu.com/feed/e4dde71190ef76c61e8631beb7c154eaae516733.heic?token=316f885aa55e46693599025900c6689f",
+            "height": 744,
+            "original": "http://baidu-aigc.cdn.bcebos.com/task/bb98577530bc68d3b152218867351f7c08d3a63b.jpg?for=bg",
+            "pic_url": "http://pics7.baidu.com/feed/e4dde71190ef76c61e8631beb7c154eaae516733.jpeg?token=410dab96e6eea4587741709672319a43",
+            "src": "http://pics7.baidu.com/feed/e4dde71190ef76c61e8631beb7c154eaae516733.jpeg?token=410dab96e6eea4587741709672319a43",
+            "webp_url": "http://pics4.baidu.com/feed/e4dde71190ef76c61e8631beb7c154eaae516733.webp?token=dc1a1fb2e6333c4c33653d670f0293a6",
+            "width": 558
+        },
+        "size_r4_3": {
+            "cropInfo": "{\"face_trunc_score\":1,\"face_trunc_flag\":0,\"collages_flag\":0,\"bggen_crop_flag\":0,\"word_trunc_flag\":0}",
+            "heic_url": "http://pics3.baidu.com/feed/9922720e0cf3d7ca4a5937e0d8c817196963a9e4.heic?token=747c9cf62eb887beb7a710eabc5a554d",
+            "height": 419,
+            "original": "http://baidu-aigc.cdn.bcebos.com/task/bb98577530bc68d3b152218867351f7c08d3a63b.jpg?for=bg",
+            "pic_url": "http://pics0.baidu.com/feed/9922720e0cf3d7ca4a5937e0d8c817196963a9e4.jpeg?token=2747e75e48e5ea43c14526b3e25b30d4",
+            "src": "http://pics0.baidu.com/feed/9922720e0cf3d7ca4a5937e0d8c817196963a9e4.jpeg?token=2747e75e48e5ea43c14526b3e25b30d4",
+            "webp_url": "http://pics3.baidu.com/feed/9922720e0cf3d7ca4a5937e0d8c817196963a9e4.webp?token=9cd4d010b9690ed7d11569d3c7d41965",
+            "width": 558
+        }
+    },
+    "is_authenticated": 0,
+    "is_bjh_story": 1,
+    "is_duplicate": 0,
+    "is_published": 1,
+    "is_real_time_news": 0,
+    "is_suspected_spam": {
+        "is_spam": 0,
+        "reason": "default no spam",
+        "uid": "6796367204"
+    },
+    "is_xifan": 0,
+    "issue_status": 1,
+    "last_audit_type": "qm",
+    "leader_content_model": {
+        "extra_info": [
+            {
+                "para_index": "title"
+            }
+        ],
+        "score": {
+            "leader": 0.00061190058477223,
+            "leader_possible": 0.00036513697705232,
+            "norisk": 0.99852991104126,
+            "politic": 0.00025988221750595,
+            "sensitive": 0.00023302578483708
+        }
+    },
+    "leader_content_model_v2": [
+        {
+            "desc": "leader",
+            "position": [
+                {
+                    "extra_info": "",
+                    "para_index": "title",
+                    "raw_score": {
+                        "leader": 8.4482317106449e-6,
+                        "leader_possible": 7.1810609370004e-6,
+                        "norisk": 0.99997174739838,
+                        "politic": 5.4299503062794e-6,
+                        "sensitive": 7.1692438723403e-6
+                    }
+                }
+            ],
+            "score": 8.4482317106449e-6,
+            "type": 1
+        },
+        {
+            "desc": "leader_possible",
+            "position": [
+                {
+                    "extra_info": "",
+                    "para_index": "title",
+                    "raw_score": {
+                        "leader": 8.4482317106449e-6,
+                        "leader_possible": 7.1810609370004e-6,
+                        "norisk": 0.99997174739838,
+                        "politic": 5.4299503062794e-6,
+                        "sensitive": 7.1692438723403e-6
+                    }
+                }
+            ],
+            "score": 7.1810609370004e-6,
+            "type": 1
+        },
+        {
+            "desc": "sensitive",
+            "position": [
+                {
+                    "extra_info": "",
+                    "para_index": "title",
+                    "raw_score": {
+                        "leader": 8.4482317106449e-6,
+                        "leader_possible": 7.1810609370004e-6,
+                        "norisk": 0.99997174739838,
+                        "politic": 5.4299503062794e-6,
+                        "sensitive": 7.1692438723403e-6
+                    }
+                }
+            ],
+            "score": 7.1692438723403e-6,
+            "type": 1
+        },
+        {
+            "desc": "leader_plus_possible",
+            "position": [
+                {
+                    "extra_info": "",
+                    "para_index": "title",
+                    "raw_score": {
+                        "leader": 8.4482317106449e-6,
+                        "leader_possible": 7.1810609370004e-6,
+                        "norisk": 0.99997174739838,
+                        "politic": 5.4299503062794e-6,
+                        "sensitive": 7.1692438723403e-6
+                    }
+                }
+            ],
+            "score": 1.5629292647645e-5,
+            "type": 1
+        },
+        {
+            "desc": "danger",
+            "position": [
+                {
+                    "extra_info": "",
+                    "para_index": "title",
+                    "raw_score": {
+                        "leader": 8.4482317106449e-6,
+                        "leader_possible": 7.1810609370004e-6,
+                        "norisk": 0.99997174739838,
+                        "politic": 5.4299503062794e-6,
+                        "sensitive": 7.1692438723403e-6
+                    }
+                }
+            ],
+            "score": 2.2798536519986e-5,
+            "type": 1
+        }
+    ],
+    "leader_variant_model": {
+        "extra_info": [
+            {
+                "para_index": "title"
+            }
+        ],
+        "score": 0.0025367601774633,
+        "score_title": 0.0025367601774633
+    },
+    "leader_voice": {
+        "has_leaders_voice": 0,
+        "result": []
+    },
+    "loc_sense_level": 1,
+    "machine_status": 1,
+    "mcs_output": {
+        "quanmin_cae_bd265": {
+            "default": {
+                "bucket": "bktvhjim1yg918f7y5ij",
+                "defaultUrlHttp": "http://vd3.bdstatic.com/mda-rjnku1bui6tjbf6y/576p/bd265_cae_roi_v8_2/1761302916792574812/mda-rjnku1bui6tjbf6y.mp4",
+                "defaultUrlHttps": "https://vd3.bdstatic.com/mda-rjnku1bui6tjbf6y/576p/bd265_cae_roi_v8_2/1761302916792574812/mda-rjnku1bui6tjbf6y.mp4",
+                "gopAlign": true,
+                "target": "mda-rjnku1bui6tjbf6y/576p/bd265_cae_roi_v8_2/1761302916792574812/mda-rjnku1bui6tjbf6y.mp4",
+                "vodMoovSize": 146018,
+                "vodVideoBps": 350914,
+                "vodVideoDuration": 255,
+                "vodVideoHW": "1024$$576",
+                "vodVideoRate": 30,
+                "vodVideoSize": 11185253
+            },
+            "fhd": {
+                "bucket": "bktvhjim1yg918f7y5ij",
+                "defaultUrlHttp": "http://vd3.bdstatic.com/mda-rjnku1bui6tjbf6y/1080p/bd265_cae_roi_v8_2/1761302916854619380/mda-rjnku1bui6tjbf6y.mp4",
+                "defaultUrlHttps": "https://vd3.bdstatic.com/mda-rjnku1bui6tjbf6y/1080p/bd265_cae_roi_v8_2/1761302916854619380/mda-rjnku1bui6tjbf6y.mp4",
+                "gopAlign": true,
+                "target": "mda-rjnku1bui6tjbf6y/1080p/bd265_cae_roi_v8_2/1761302916854619380/mda-rjnku1bui6tjbf6y.mp4",
+                "vodMoovSize": 146019,
+                "vodVideoBps": 513464,
+                "vodVideoDuration": 255,
+                "vodVideoHW": "1920$$1080",
+                "vodVideoRate": 30,
+                "vodVideoSize": 16366652
+            },
+            "sc": {
+                "bucket": "bktvhjim1yg918f7y5ij",
+                "defaultUrlHttp": "http://vd3.bdstatic.com/mda-rjnku1bui6tjbf6y/720p/bd265_cae_roi_v8_2/1761302916749290052/mda-rjnku1bui6tjbf6y.mp4",
+                "defaultUrlHttps": "https://vd3.bdstatic.com/mda-rjnku1bui6tjbf6y/720p/bd265_cae_roi_v8_2/1761302916749290052/mda-rjnku1bui6tjbf6y.mp4",
+                "gopAlign": true,
+                "target": "mda-rjnku1bui6tjbf6y/720p/bd265_cae_roi_v8_2/1761302916749290052/mda-rjnku1bui6tjbf6y.mp4",
+                "vodMoovSize": 146018,
+                "vodVideoBps": 373268,
+                "vodVideoDuration": 255,
+                "vodVideoHW": "1280$$720",
+                "vodVideoRate": 30,
+                "vodVideoSize": 11897831
+            }
+        }
+    },
+    "media_transcode": 2,
+    "micro_cate_mul": [
+        {
+            "动漫": 0.28672802448273
+        }
+    ],
+    "micro_check_vulgar": {
+        "detail": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+        ],
+        "msg": "ok"
+    },
+    "micro_pornographic": {
+        "cls_top5": {
+            "index": [
+                108,
+                92,
+                180,
+                187,
+                17
+            ],
+            "score": [
+                0.75106114149094,
+                0.66798478364944,
+                0.57318997383118,
+                0.29593989253044,
+                0.22684752941132
+            ]
+        },
+        "msg": "ok",
+        "porn": 0,
+        "reject": 0,
+        "timestamp": {
+            "flag": 1,
+            "hit_set": [
+                108
+            ]
+        }
+    },
+    "micro_sub_cate_mul": [
+        {
+            "动画短片": 0.28672802448273
+        }
+    ],
+    "micro_vector_content": "AAgAAAAAAABNViQ/AAAAAAAAAAAAAAAAAAAAAGQNPT/LEAI/y4iMPn8bHj8AAAAAQx6ZPjT46j4AAAAAoND6PQAAAABygx4++axfPwAAAAAAAAAAAAAAAMKhHj8AAAAAXRrmPmgA/z6CjhE/v0Q+PwAAAABQIUc8AAAAAF8tnj9z0To/Yq07PwAAAAAAAAAAAAAAAAAAAAAAAAAAnQWPPrVCzT0cKWY/xjI/P2fdtD44Bp8+v9S9PY9YkT3UVWw+AAAAAAAAAAAAAAAAi+gaP95nkj9y9gU/AAAAAENyxD0AAAAAAAAAAAAAAAAAAAAARvlKPwAAAAAAAAAA2+dKPvLkTz0AAAAAIwy/Pjf0cj3IPa0+AAAAAAAAAAAAAAAAlULSPgAAAAAAAAAAAAAAAGhhfj8AAAAAAAAAAAAAAADRk4E/AAAAAFiIJz90Yxw+AAAAAMWIvz0AAAAACS+MPsgDLT6JPqY//iyXPkbEbT10zYI/oo/EPgAAAADpQAk/8RHNPgAAAAAjlII9fVoIPwAAAADBx9c+AAAAAAAAAACy8rc+pPRwPwAAAAAUD5U8VPjYPgAAAAAAAAAAAAAAACP2TT9a7R4/p4c6PgAAAABFXSw/PeFaPgAAAAC+BZU+NSPhPEDBkj4AAAAAAAAAAEtZ/z422Jc+cB69PgAAAADEFLo/AAAAAAAAAAAbeoM+AAAAAAAAAAAAAAAAZWo3PgAAAAAAAAAAFMmDPwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFm9jD8AAAAAAAAAAIOMzj0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACJsR8/AAAAAAAAAAAAAAAAFeIHPwAAAABnlOk+Yl26PgAAAAAAAAAAjoosPwAAAAC+N+Y+lnXGPgAAAAAXUHI/AAAAAAhQgT8AAAAAiNlBP0t9vz4AAAAAOKNFPwAAAAAUIyY9uzLTPnPkLD8AAAAAAAAAAM53rD42ApE+2tadPgAAAAAAAAAAmSYxPv6AoD3iWrE9X+pTP7EsuT62zTs/DrtGPhcdMj8AAAAAAAAAAAAAAAAAAAAAdXqBPwAAAABnepQ+AAAAAAAAAACf0GQ92blKPgAAAAAiHa89AAAAAFsrBD4FIxc8ppptPwAAAAAAAAAAAAAAAFMObT9eVcI+20TAPpkpUDwAAAAAAAAAAOMFXT+sRys/AAAAAAAAAAAAAAAAAAAAADkBAz8AAAAAlum4PkuwYT8a4J8+AAAAAAAAAAAAAAAAKOnPPisZBz8AAAAAAAAAAKCVNj4AAAAAAAAAAPKVlz4AAAAAifm3PgAAAABNxJo+u33DPyklSz8AAAAAAAAAAAAAAAAAAAAA1yX0PXk40D4AAAAADRU7PwAAAAAAAAAAEE0NPwpNEj8M8Rs9AAAAAPuuPz4AAAAA1p6pPgAAAAAAAAAAAAAAAAAAAAAAAAAAGq6NPQAAAAAHZk4/TYNDP04gJD96ujY/49s/P6CyCD8uCjE/BIkUP9/9tD8AAAAASH7vPgAAAAAAAAAAAAAAAAulOT4EtSQ/AAAAAIStlj0AAAAAAAAAAAAAAADgFcc/jQwYPwAAAAD7x9E+AAAAAL5UYz8AAAAAtwZ/PwAAAAClsKg+3AAuP+3yWT8AAAAAAAAAAMaq/j4AAAAAUvXLPhW8xD4AAAAAAAAAABMqPT47LkI+oV2RPl4aHT8AAAAANghDPAAAAACmyZM/hik7PgAAAACvjtY+5yOYP3WG+T42nZw+odaqPZyXVj8AAAAAAAAAALQqnT0AAAAAEJtTPwAAAAA/rwM/AAAAAAAAAACXyqM+6imzPv9w4T8go0Y5AAAAAFwX+z5KqtY9AAAAAD/uAj4AAAAAAAAAAHDJDz8AAAAAAAAAAJjyUj8AAAAAtgaNPeyQ3T8AAAAAAAAAAADHBz0AZgg/AAAAAMAYyD4AAAAAAAAAADh5ID8AAAAAAAAAAAAAAAAKwWk/eELbPh8j4j+bZXE/AAAAAAAAAAAAAAAAAAAAAAAAAADNA2o/KM4wPSXJxT0AAAAAhCVhPyKrzT2tGuo+AAAAAAAAAAAa9tE+AAAAAAAAAADx8Gc/zbVFPgAAAAB5rFQ/RqmTPs2sLD+BNWk+ZdloPyD7pT4AAAAAAAAAAG14dj8yHmU+AAAAAAAAAACIoHw/ndTUPqd8iT4AAAAAAAAAAAAAAAAAAAAAAAAAAFlwZT4tsHs/MU2zPwAAAAAAAAAA/efSPgAAAAAAAAAAAAAAAAAAAABVZw8+VHUqPwAAAAC++Yw/AAAAAMsKAz8AAAAAoQ5BPQAAAAD91Cg/AAAAAFu67D4AAAAAAAAAAEu/MT8AAAAAuiBvPTLxiz7xNdI+/x2rPtG6FT4AAAAAAAAAAAAAAABBsbA+AAAAAI5Mtj4AAAAAvuoIPgAAAAAAAAAAMeB6PdPuNT0AAAAAAAAAAGV5VD5d4Uo/7MVCPuGABj81vj0/B/vFPswSgT5EYO88AAAAAAAAAADEciI/A5fGPjj3JT8AAAAAmYfGPljUtT0Bpjg/3MCEPBPj7D0AAAAA8prNPQAAAAAAAAAA4VxRPwAAAAAAAAAAAAAAAAAAAAAAAAAAwwvhPrtz5z4AAAAAWsabPtsRJT0AAAAAOkkoPgAAAAAAAAAAAAAAAAwNmz/g1fI+AAAAAAAAAAAAAAAAlOPrPgAAAACKx2I+AAAAAAAAAAAAAAAA",
+    "mvideoFirstFrame": "http://vd3.bdstatic.com/mda-rjnku1bui6tjbf6y/1761230519/mda-rjnku1bui6tjbf6y00000000.jpg",
+    "need_advertising_unlock": 0,
+    "new_cate_v2": "动漫",
+    "new_sub_cate_v2": "动画短片",
+    "news_location_level": "2",
+    "nid": "5122218040096410333",
+    "nryx_mount_list": [],
+    "occurrence_time": 1761267687,
+    "ocr_url": "http://feed-thumbnail-cache.bj.bcebos.com/com_fore_server/OcrShortTerm/3314818892030903695/PUT_OCR_1FPS.txt",
+    "odyssey_content_type": "ugc_video",
+    "odyssey_data": 1,
+    "odyssey_service_name": "ugcVideo",
+    "odyssey_success": 1,
+    "old_topic_rec": "{\"public_time_std\": -1, \"sim_items_num\": 0, \"is_old_topic\": 0}",
+    "original_status": 0,
+    "overlap_with_box": 0,
+    "politic_resource_name": "非敏感话题",
+    "politic_sensitive": {
+        "is_sensitive": 0,
+        "scene": "adsensitive",
+        "scene_details": {
+            "is_white": 0,
+            "keywords": "",
+            "scene": "adsensitive"
+        }
+    },
+    "political_affairs_v2": {
+        "is_hit": 0
+    },
+    "productionType": 0,
+    "pub_source_from": "",
+    "publish_at": "2025-10-24 09:03:32",
+    "publish_time": "2025-10-24 09:01:29",
+    "qm_user_ip": "0.0.0.0",
+    "quality_audit_info": "{\"send_audit_time\":1761267873,\"first_audit_time\":1761267873,\"last_audit_uid\":\"system\",\"last_audit_time\":1761267873}",
+    "quality_audit_type": "qm",
+    "quality_last_check_time": 1761267873,
+    "quality_not_pass_reason": "",
+    "quality_status": "publish",
+    "queue_level": "low",
+    "refused_duplication_details": {
+        "recall_nids": [],
+        "recall_num": 0,
+        "rmb_checkRejectReason": [],
+        "scores": []
+    },
+    "resource_black_user_content": 0.34126633405685,
+    "rmb_Number2": "20251024",
+    "rmb_appid": 1824729771824144,
+    "rmb_avatar": "https://avatar.bdstatic.com/it/u=1562252329,872257246&fm=3012&app=3012&autime=1761266385&size=b200,200",
+    "rmb_baijiahaoStatus": "pass",
+    "rmb_brief": "",
+    "rmb_checkAccept": 1,
+    "rmb_checkImage": "http://baidu-aigc.cdn.bcebos.com/task/bb98577530bc68d3b152218867351f7c08d3a63b.jpg?for=bg",
+    "rmb_checkType": 109887,
+    "rmb_definition": "",
+    "rmb_description": "丈夫出差15天回来，兴师问罪：你为什么一个电话都不打？我平静回复：打了，是你小女友和女儿接的电话，他顿时脸色惨白",
+    "rmb_detailUrlForH5": "http://mbd.baidu.com/builder/preview/s?id=12677205385425394762",
+    "rmb_detailUrlForWeb": "http://mbd.baidu.com/builder/preview/s?id=12677205385425394762",
+    "rmb_duration": 255,
+    "rmb_effectiveEndTime": "1769097599",
+    "rmb_idlCategory": "其他",
+    "rmb_idlSubCategory": "NULL",
+    "rmb_idl_ext": "{\"video_vector\":\"134\",\"micro_video_vector\":134}",
+    "rmb_image": "http://baidu-aigc.cdn.bcebos.com/task/bb98577530bc68d3b152218867351f7c08d3a63b.jpg?for=bg",
+    "rmb_imagePhysicalQuality": "{\"monotone\":0}",
+    "rmb_insertTime": 1761267810,
+    "rmb_isOriginal": 0,
+    "rmb_isPushFeed": "1",
+    "rmb_isSelfBuild": 1,
+    "rmb_lastCheckTime": 1761267873,
+    "rmb_microCheckInfo": "{\"titleQuality\":\"优质\",\"crosswiseCoverQuality\":\"大图\",\"crosswiseCoverBigpicMsg\":{\"status\":\"robot\",\"bigpic\":\"大图\"},\"newCategory\":\"动漫\",\"newSubCategory\":\"动画短片\",\"accuracy\":0.28672802448273}",
+    "rmb_modtime": 1761267873,
+    "rmb_name": "丈夫出差15天回来，兴师问罪：你为什么一个电话都不打？我平静回复：打了，是你小女友和女儿接的电话，他顿时脸色惨白",
+    "rmb_originalUrl": "",
+    "rmb_physicalQuality": "{\"title_vulgar\":{\"score\":0.30740857124328616,\"vulgar\":0},\"sound\":{\"sound_left_right_diff\":{\"diff\":0,\"diff_score\":0.04511040536997125}},\"video_stuck\":{\"is_stuck\":0},\"shake\":{\"score\":0.001,\"has_shake\":0},\"title_damage\":{\"result\":0}}",
+    "rmb_playUrlForApp": "http://mbd.baidu.com/builder/preview/s?id=12677205385425394762",
+    "rmb_playUrlForH5": "http://mbd.baidu.com/builder/preview/s?id=12677205385425394762",
+    "rmb_playUrlForWeb": "http://mbd.baidu.com/builder/preview/s?id=12677205385425394762",
+    "rmb_previewImageHttp": "http://baidu-aigc.cdn.bcebos.com/task/bb98577530bc68d3b152218867351f7c08d3a63b.jpg",
+    "rmb_previewImageHttps": "https://baidu-aigc.cdn.bcebos.com/task/bb98577530bc68d3b152218867351f7c08d3a63b.jpg",
+    "rmb_previewPlayHttp": "http://vdlt.bdstatic.com/vod-gechgi84v43uhfhp/mda-rjnku1bui6tjbf6y.mp4",
+    "rmb_previewPlayHttps": "https://vdlt.bdstatic.com/vod-gechgi84v43uhfhp/mda-rjnku1bui6tjbf6y.mp4",
+    "rmb_previewVideoDuration": "255",
+    "rmb_previewVideoResolution": "1920$$1920",
+    "rmb_previewVideoSize": "108",
+    "rmb_producer": "一纸流年",
+    "rmb_publishTime": 1761267810,
+    "rmb_selfBuildAudioBps": 131533,
+    "rmb_selfBuildAudioChannel": 2,
+    "rmb_selfBuildAudioRateInHz": 48000,
+    "rmb_selfBuildDuration": 255,
+    "rmb_selfBuildFormat": "mp4",
+    "rmb_selfBuildImgHttp": "http://baidu-aigc.cdn.bcebos.com/task/bb98577530bc68d3b152218867351f7c08d3a63b.jpg",
+    "rmb_selfBuildImgHttps": "https://baidu-aigc.cdn.bcebos.com/task/bb98577530bc68d3b152218867351f7c08d3a63b.jpg",
+    "rmb_selfBuildSize": 21498,
+    "rmb_selfBuildUrlHttp": "http://vd3.bdstatic.com/mda-rjnku1bui6tjbf6y/540p/h264_cae/1761230519787013431/mda-rjnku1bui6tjbf6y.mp4",
+    "rmb_selfBuildUrlHttps": "https://vd3.bdstatic.com/mda-rjnku1bui6tjbf6y/540p/h264_cae/1761230519787013431/mda-rjnku1bui6tjbf6y.mp4",
+    "rmb_selfBuildVideoBps": 674457,
+    "rmb_selfBuildVideoHW": "540$$960",
+    "rmb_selfBuildVideoRate": 0,
+    "rmb_selfSourceFrom": 4,
+    "rmb_siteAccountId": 6796367204,
+    "rmb_siteAccountType": 1,
+    "rmb_sourceFrom": "com.user.micro",
+    "rmb_sourceTime": 1761267687,
+    "rmb_status": 0,
+    "rmb_type": "",
+    "rmb_updateReason": "1",
+    "rmb_uploadExt": "{\"target\":null}",
+    "rmb_uploader": "一纸流年",
+    "rmb_url": "http://www.internal.video.baidu.com/a4599acab7b9d0c4eb28dc41bb6848fc.html",
+    "rmb_videoFormat": "mp4",
+    "rmb_videoId": "5122218040096410333",
+    "rmb_videoInfoExt": "{\"360p\":{\"target\":\"mda-rjnku1bui6tjbf6y/360p/mv_cae264_backtrack_360p_normal/1761267820428004051/mda-rjnku1bui6tjbf6y.mp4\",\"bucket\":\"bktvhjim1yg918f7y5ij\",\"360pUrlHttp\":\"http://vd3.bdstatic.com/mda-rjnku1bui6tjbf6y/360p/mv_cae264_backtrack_360p_normal/1761267820428004051/mda-rjnku1bui6tjbf6y.mp4\",\"360pUrlHttps\":\"https://vd3.bdstatic.com/mda-rjnku1bui6tjbf6y/360p/mv_cae264_backtrack_360p_normal/1761267820428004051/mda-rjnku1bui6tjbf6y.mp4\",\"vodVideoSize\":16926796,\"vodVideoBps\":531036,\"vodVideoRate\":30,\"vodVideoHW\":\"640$$360\",\"vodVideoDuration\":255,\"vodMoovSize\":134245},\"default\":{\"target\":\"mda-rjnku1bui6tjbf6y/540p/mv_cae264_backtrack_540p_normal/1761267820441336252/mda-rjnku1bui6tjbf6y.mp4\",\"bucket\":\"bktvhjim1yg918f7y5ij\",\"defaultUrlHttp\":\"http://vd3.bdstatic.com/mda-rjnku1bui6tjbf6y/540p/mv_cae264_backtrack_540p_normal/1761267820441336252/mda-rjnku1bui6tjbf6y.mp4\",\"defaultUrlHttps\":\"https://vd3.bdstatic.com/mda-rjnku1bui6tjbf6y/540p/mv_cae264_backtrack_540p_normal/1761267820441336252/mda-rjnku1bui6tjbf6y.mp4\",\"vodVideoSize\":21497751,\"vodVideoBps\":674437,\"vodVideoRate\":30,\"vodVideoHW\":\"960$$540\",\"vodVideoDuration\":255,\"vodMoovSize\":137949},\"sc\":{\"target\":\"mda-rjnku1bui6tjbf6y/720p/mv_cae264_backtrack_720p_normal/1761267820531865045/mda-rjnku1bui6tjbf6y.mp4\",\"bucket\":\"bktvhjim1yg918f7y5ij\",\"scUrlHttp\":\"http://vd3.bdstatic.com/mda-rjnku1bui6tjbf6y/720p/mv_cae264_backtrack_720p_normal/1761267820531865045/mda-rjnku1bui6tjbf6y.mp4\",\"scUrlHttps\":\"https://vd3.bdstatic.com/mda-rjnku1bui6tjbf6y/720p/mv_cae264_backtrack_720p_normal/1761267820531865045/mda-rjnku1bui6tjbf6y.mp4\",\"vodVideoSize\":21048540,\"vodVideoBps\":660346,\"vodVideoRate\":30,\"vodVideoHW\":\"1280$$720\",\"vodVideoDuration\":255,\"vodMoovSize\":133302},\"1080p\":{\"target\":\"mda-rjnku1bui6tjbf6y/1080p/mv_cae264_backtrack_1080p_normal/1761267820472038066/mda-rjnku1bui6tjbf6y.mp4\",\"bucket\":\"bktvhjim1yg918f7y5ij\",\"1080pUrlHttp\":\"http://vd3.bdstatic.com/mda-rjnku1bui6tjbf6y/1080p/mv_cae264_backtrack_1080p_normal/1761267820472038066/mda-rjnku1bui6tjbf6y.mp4\",\"1080pUrlHttps\":\"https://vd3.bdstatic.com/mda-rjnku1bui6tjbf6y/1080p/mv_cae264_backtrack_1080p_normal/1761267820472038066/mda-rjnku1bui6tjbf6y.mp4\",\"vodVideoSize\":40450478,\"vodVideoBps\":1269032,\"vodVideoRate\":30,\"vodVideoHW\":\"1920$$1080\",\"vodVideoDuration\":255,\"vodMoovSize\":137279}}",
+    "rmb_videoOtherExt": "{\"microVisCategoryProbability\":{\"category\":\"其他\",\"subCategory\":\"NULL\",\"categoryProbability\":0.45956352353096,\"subCategoryProbability\":0.3825471997261},\"high_author_info\":{\"uid\":\"6796367204\",\"user_rank\":-1,\"is_bluev\":\"\",\"is_original\":\"\",\"spark_copy_user\":\"\",\"politics_user\":\"\",\"spark_quanmin_user\":\"\"}}",
+    "rmb_videoProvider": "com.user.micro",
+    "rmb_videoSize": 21498,
+    "rmb_videoSourceUrl": "http://aigcrender.bj.bcebos.com/aigcrender/vrender/2025-10-23/444786849/328c0674154741978da156d53e457834.mp4?authorization=bce-auth-v1%2F0eac9da97d094ea5b9f06f6441c7a652%2F2025-10-23T14%3A43%3A55Z%2F-1%2Fhost%2F9fa7ceae76fae29f096b6866880139376086cf83ed6968870386a7d51b4c78e4",
+    "rmb_videoType": "3",
+    "score_audit_b_str": 2,
+    "score_info_b_str": "{\"gbdt_probability\":{\"pred_1_proba\":0.26728846750311,\"pred_2_proba\":0.48424250375853,\"pred_3_proba\":0.24846902873837},\"comment\":\"\"}",
+    "score_machine_b_str": 2,
+    "secure_audit_info": "{\"send_audit_time\":1761267871,\"first_audit_time\":1761267872,\"last_audit_uid\":\"system\",\"last_audit_time\":1761267872}",
+    "secure_audit_type": "sm",
+    "secure_need_check_reason": "",
+    "secure_not_pass_reason": "",
+    "secure_status": "publish",
+    "secure_vv_review_status": "finish",
+    "security_model_ip_val": "[{\"ip_info\":{\"ip\":\"\",\"isp\":\"None\",\"country\":\"None\",\"province\":\"None\",\"city\":\"None\",\"is_idc\":\"false\",\"is_base_station\":\"false\"}}]",
+    "select_auto_mount": 0,
+    "shoubai_c_articleid": "12677205385425394762",
+    "similar_title_abstract": {
+        "similar_title_nids": [
+            "9911281323631251066",
+            "9463557667594487849",
+            "9830533924189680172",
+            "9422795893841774974",
+            "10349201643786048031",
+            "9235357825919587845",
+            "9880359461815348197",
+            "10428071811982039344",
+            "9597898738426716926",
+            "10217612959778622562",
+            "9608828536794220402",
+            "9774998579524610648",
+            "9469008135661427724",
+            "10216435210944737705",
+            "9387633267164497847",
+            "9282310816364383281",
+            "9152663633698638999",
+            "9526107711551697825",
+            "9645381667774047762",
+            "9223303287291665985",
+            "9803387944083357286",
+            "9677808146936285516",
+            "9582816861956735869",
+            "9991341335114608203",
+            "9900375345109815094",
+            "9561563340918497168",
+            "9366904513675898076",
+            "9988685035237950728",
+            "9476279115903960039",
+            "9204086035870641165"
+        ],
+        "similar_title_num": 30
+    },
+    "snapshot_low_quality": {
+        "detail": "category: 动漫",
+        "is_snapshot_low_quality": 0
+    },
+    "sound_src": 3,
+    "source_from": "[\"micro_content\"]",
+    "source_from_id": "{\"micro_content\":[3000104]}",
+    "source_id": 3000104,
+    "source_name": "aigc_pipekit",
+    "source_reprinted_allow": 0,
+    "source_reprinted_astrict": "abstract",
+    "source_trace": "CMS_VIDEO_PUBLISH",
+    "source_type": "ugc",
+    "spark_category": "{\"microv_cate_v1\":\"\",\"microv_sub_cate_v1\":\"\"}",
+    "spoken_lang_info": {
+        "Chinese": 1
+    },
+    "status": "publish",
+    "story_source_from": "dujia",
+    "strategy_exinfo": "[]",
+    "structure_label": {
+        "dongman": {
+            "dongmanchuangyi": [
+                "AI绘图"
+            ]
+        },
+        "general": {
+            "neironghuafeng": [
+                "普通风"
+            ],
+            "shijuefengge": [
+                "动画插画"
+            ],
+            "zhongxingqingxu": [
+                "中性情绪"
+            ]
+        }
+    },
+    "sub_category_v4": "动画短片",
+    "sub_status_id": 1,
+    "synthetic_content": 1,
+    "tertiary_sub_category_v4": "",
+    "tethysPublicSentiment": {
+        "desc": "",
+        "name": "",
+        "res": ""
+    },
+    "text_politic_resource": {
+        "label_name": {
+            "emotion_name": "负向",
+            "object_name": "无明确对象",
+            "resource_name": "非敏感话题"
+        },
+        "offices_label": {
+            "appointment_dismissal": 0,
+            "job_introduction": 0,
+            "officials_fall": 0,
+            "resume_recognition": 0
+        },
+        "scores": {
+            "emotion_scores": {
+                "正向": 0.32374972105026,
+                "负向": 0.67625027894974
+            },
+            "object_scores": {
+                "乌克兰": 2.2212032490643e-5,
+                "俄罗斯": 6.0349666455295e-5,
+                "其他国内地区": 0.0006537179579027,
+                "其它国家": 9.399521513842e-5,
+                "北京": 6.5723826992325e-5,
+                "印度": 3.3120206353487e-5,
+                "台湾": 5.8189725677948e-5,
+                "国家": 0.13293614983559,
+                "地方": 0.0010954921599478,
+                "新疆": 3.062300675083e-5,
+                "无明确对象": 0.86342930793762,
+                "日本": 0.00014801052748226,
+                "朝鲜": 1.9887585949618e-5,
+                "法国": 7.2197683039121e-5,
+                "省级": 0.0003513167030178,
+                "美国": 0.00068877422017977,
+                "英国": 7.9479817941319e-5,
+                "西藏": 1.8219874618808e-5,
+                "韩国": 5.4703559726477e-5,
+                "香港": 8.8582382886671e-5
+            },
+            "resource_scores": {
+                "中国外交": 3.9975842810236e-5,
+                "中外/台陆对抗": 9.8610522400122e-5,
+                "中外/台陆对比": 0.00025713656214066,
+                "中外合作": 5.9694859373849e-5,
+                "公职人员": 0.00072374724550173,
+                "共产党相关": 1.1695216926455e-5,
+                "共产党革命史": 5.6004162615864e-5,
+                "其它敏感历史": 0.00062086951220408,
+                "军事": 6.1620739870705e-5,
+                "军人/军队": 0.00012131581024732,
+                "制度": 9.5179108029697e-5,
+                "医疗": 0.00069606176111847,
+                "历任领导人事迹": 5.6187440350186e-5,
+                "国企事业单位": 0.00057957234093919,
+                "国外敏感历史": 4.239184272592e-5,
+                "国民党革命史": 1.8307129721506e-5,
+                "国际关系": 3.1552161090076e-5,
+                "宗教": 5.2128787501715e-5,
+                "对中评价": 3.3273612643825e-5,
+                "建国敏感历史": 4.2167052015429e-5,
+                "房地产": 0.00018459047714714,
+                "政党政治": 7.5652678788174e-5,
+                "政局/政变/分裂国家": 3.4322660212638e-5,
+                "政府机构": 0.00041583945858292,
+                "政治宣传": 8.1298501754645e-5,
+                "政策": 0.00030668833642267,
+                "敏感民族/地域相关历史": 1.7406622646376e-5,
+                "教育": 0.00086368579650298,
+                "民生其它": 0.0049935579299927,
+                "法制": 0.00088694092119113,
+                "疫情发布": 9.2099689936731e-6,
+                "疫情生活日常": 1.3915453109803e-6,
+                "疫情相关": 0.00042678695172071,
+                "社会事件": 0.002403907245025,
+                "社会现状": 0.0008266213699244,
+                "科技": 0.00053437502356246,
+                "经济": 0.00064363150158897,
+                "重点历史事件": 3.5635195672512e-5,
+                "非敏感话题": 0.98353761434555,
+                "领导人": 2.3461197997676e-5
+            }
+        },
+        "strategy_sc": {
+            "high_danger_sc": 0.0036443015751502,
+            "hot_politic_sc": 0.012818193518115,
+            "not_sensitive": 0.98353761434555
+        }
+    },
+    "text_variants_result": {
+        "abstract": {
+            "adv_ad_score": 0.006,
+            "adv_contact_score": 0,
+            "adv_url_duanshipin_score": 0,
+            "adv_url_score": 0,
+            "contact_score": 0
+        },
+        "adv_ad_score": 0.006,
+        "adv_contact_score": 0,
+        "adv_url_duanshipin_score": 0,
+        "adv_url_score": 0,
+        "contact_score": 0
+    },
+    "text_vulgar": 0.15030147135258,
+    "third_publish_at": 1761267687,
+    "tiny_selfBuildVideoHW": "1080$1920",
+    "tiny_video": 1,
+    "title": "丈夫出差15天回来，兴师问罪：你为什么一个电话都不打？我平静回复：打了，是你小女友和女儿接的电话，他顿时脸色惨白",
+    "title_keyterm_missing": {
+        "confidence": 0.97995775938034,
+        "label": 0
+    },
+    "title_lowquality": {
+        "regular": {
+            "contact": 0,
+            "duplicate": 0,
+            "no_chinese": 0,
+            "regular_flag": 0,
+            "special_character": 0,
+            "unsimplified_character": 0
+        },
+        "title_bruise": 0
+    },
+    "topic_recall_flag": 0,
+    "transform_id": "12677205385425394762",
+    "type": "ugc_video",
+    "ugc_channel": "ugc",
+    "ugc_content": "丈夫出差15天回来，兴师问罪：你为什么一个电话都不打？我平静回复：打了，是你小女友和女儿接的电话，他顿时脸色惨白",
+    "ugc_create_time": 1761267687,
+    "ugc_data_type": 5,
+    "ugc_images": [],
+    "ugc_origin_channel": "bjh",
+    "ugc_source": 2,
+    "ugc_source_from": "vsv_bjh_pc",
+    "ugc_status": 0,
+    "ugc_target": [],
+    "ugc_third_id": "037ade2d0cb5868b3614443a34ebcace",
+    "ugc_tiny_videos": {
+        "pre_http": {
+            "cover": "http://baidu-aigc.cdn.bcebos.com/task/bb98577530bc68d3b152218867351f7c08d3a63b.jpg",
+            "file": "http://vdlt.bdstatic.com/vod-gechgi84v43uhfhp/mda-rjnku1bui6tjbf6y.mp4"
+        },
+        "pre_https": {
+            "cover": "https://baidu-aigc.cdn.bcebos.com/task/bb98577530bc68d3b152218867351f7c08d3a63b.jpg",
+            "file": "https://vdlt.bdstatic.com/vod-gechgi84v43uhfhp/mda-rjnku1bui6tjbf6y.mp4"
+        },
+        "pre_long": 255.126,
+        "pre_resolution": {
+            "height_pixel": 1920,
+            "width_pixel": 1920
+        },
+        "pre_size": 108364
+    },
+    "ugc_trans_status": 1,
+    "ugc_trans_time": 1761267723,
+    "ugc_type": 3,
+    "ugc_update_time": 1761267812,
+    "uncommon_beauty": {
+        "level_0": 0.89953,
+        "level_1": 0.03628,
+        "level_2": 0.0642
+    },
+    "underage_rec": 1,
+    "unify_title_event": 1,
+    "updated_at": "2025-10-24 09:04:33",
+    "url": "http://baijiahao.baidu.com/builder/preview/s?id=5122218040096410333",
+    "url_sign": 5122218040096411000,
+    "user_id": "6796367204",
+    "user_type": 1,
+    "vertical_6_7": "http://f7.baidu.com/it/u=52527672,3673875977&fm=222&app=106&f=JPEG?w=756&h=882&s=8FB37D85568F50FA02BD98170300D061",
+    "vfs_list": "",
+    "videoAdvancedExt": "{\"bdevc\":{\"raw\":{\"default\":{\"target\":\"mda-rjnku1bui6tjbf6y/576p/bd265_cae_roi_v8_2/1761302916792574812/mda-rjnku1bui6tjbf6y.mp4\",\"bucket\":\"bktvhjim1yg918f7y5ij\",\"defaultUrlHttp\":\"http://vd3.bdstatic.com/mda-rjnku1bui6tjbf6y/576p/bd265_cae_roi_v8_2/1761302916792574812/mda-rjnku1bui6tjbf6y.mp4\",\"defaultUrlHttps\":\"https://vd3.bdstatic.com/mda-rjnku1bui6tjbf6y/576p/bd265_cae_roi_v8_2/1761302916792574812/mda-rjnku1bui6tjbf6y.mp4\",\"vodVideoSize\":11185253,\"vodVideoBps\":350914,\"vodVideoRate\":30,\"vodVideoHW\":\"1024$$576\",\"vodVideoDuration\":255,\"vodMoovSize\":146018,\"gopAlign\":true,\"video_clarity_score_v5\":8.63},\"sc\":{\"target\":\"mda-rjnku1bui6tjbf6y/720p/bd265_cae_roi_v8_2/1761302916749290052/mda-rjnku1bui6tjbf6y.mp4\",\"bucket\":\"bktvhjim1yg918f7y5ij\",\"defaultUrlHttp\":\"http://vd3.bdstatic.com/mda-rjnku1bui6tjbf6y/720p/bd265_cae_roi_v8_2/1761302916749290052/mda-rjnku1bui6tjbf6y.mp4\",\"defaultUrlHttps\":\"https://vd3.bdstatic.com/mda-rjnku1bui6tjbf6y/720p/bd265_cae_roi_v8_2/1761302916749290052/mda-rjnku1bui6tjbf6y.mp4\",\"vodVideoSize\":11897831,\"vodVideoBps\":373268,\"vodVideoRate\":30,\"vodVideoHW\":\"1280$$720\",\"vodVideoDuration\":255,\"vodMoovSize\":146018,\"gopAlign\":true,\"video_clarity_score_v5\":8.64},\"fhd\":{\"target\":\"mda-rjnku1bui6tjbf6y/1080p/bd265_cae_roi_v8_2/1761302916854619380/mda-rjnku1bui6tjbf6y.mp4\",\"bucket\":\"bktvhjim1yg918f7y5ij\",\"defaultUrlHttp\":\"http://vd3.bdstatic.com/mda-rjnku1bui6tjbf6y/1080p/bd265_cae_roi_v8_2/1761302916854619380/mda-rjnku1bui6tjbf6y.mp4\",\"defaultUrlHttps\":\"https://vd3.bdstatic.com/mda-rjnku1bui6tjbf6y/1080p/bd265_cae_roi_v8_2/1761302916854619380/mda-rjnku1bui6tjbf6y.mp4\",\"vodVideoSize\":16366652,\"vodVideoBps\":513464,\"vodVideoRate\":30,\"vodVideoHW\":\"1920$$1080\",\"vodVideoDuration\":255,\"vodMoovSize\":146019,\"gopAlign\":true,\"video_clarity_score_v5\":8.68}}}}",
+    "video_aesthetic": 0.56581356525421,
+    "video_clarity_rank": {
+        "rank": 3,
+        "score": 8.59
+    },
+    "video_clarity_score": 6.2635,
+    "video_clarity_score_v3": 7.1238,
+    "video_clarity_score_v4": {
+        "clarity_score": 7.5453000068665
+    },
+    "video_cover_type": "2",
+    "video_crop_pos": [
+        0.13889,
+        0,
+        0.73333,
+        0.7875
+    ],
+    "video_edge_pos": [
+        0,
+        0,
+        0,
+        0
+    ],
+    "video_frame": 1,
+    "video_metadata": "{\"codec\":\"h264\",\"bitRateInBps\":3339607,\"frameRate\":30.0,\"widthInPixel\":1080,\"heightInPixel\":1920}",
+    "video_old_news": {
+        "old_news_stage_1": {
+            "detail": "exempt_for_no_timeliness",
+            "is_old_news": 0
+        }
+    },
+    "video_risk_score": 0.39856883883476,
+    "video_rotation": 0,
+    "video_title_ads_action": 0,
+    "video_title_illegal": [
+        0.99998664855957,
+        4.183998953522e-6,
+        1.9799808796961e-6,
+        8.9090809751724e-7,
+        6.3661923377367e-6
+    ],
+    "video_unify_timeline": {
+        "content_future_reg_flag": 0,
+        "fuse_model_prob": "0.00402,0.01224,0.00116,0.0667,0.0112,0.00804,0.89664",
+        "fuse_timeline_multi_cls": 5,
+        "future_timeline_review_flag": 0,
+        "is_future_timeline": 0,
+        "occurrence_date": "2025-10-24 09:01:27",
+        "occurrence_time": 1761267687,
+        "ori_timeline_multi_cls": 5,
+        "perplexed_case_review_flag": 0,
+        "recommendEndDate": "2026-01-22 23:59:59",
+        "recommendEndTime": "1769097599",
+        "refine_reason": "",
+        "refine_timeline_multi_cls": 5,
+        "stock_timeline_review_flag": 0,
+        "weather_timeline_review_flag": 0
+    },
+    "video_watermark_info": {
+        "watermark": {
+            "defaultUrlHttp": "http://vd3.bdstatic.com/mda-rjnku1bui6tjbf6y/540p_watermark/h264_cae/1761230519828599001/mda-rjnku1bui6tjbf6y.mp4",
+            "vodVideoBps": 674457,
+            "vodVideoHW": "960$$540",
+            "vodVideoSize": 21498442
+        }
+    },
+    "vis": "{\"new_label\":{\"动漫\":0.28672802448272707,\"sub_label\":[{\"动画短片\":0.28672802448272707}]}}",
+    "vis_category": "{\"microVisCategory\":\"{\\\"newCategory\\\":\\\"动漫\\\",\\\"newSubCategory\\\":\\\"动画短片\\\",\\\"accuracy\\\":0.28672802448272707}\"}",
+    "vis_classify_result": "{\"new_label\":{\"动漫\":0.28672802448272707,\"sub_label\":[{\"动画短片\":0.28672802448272707}]}}",
+    "voice_broadcast": "0",
+    "voice_speed": "6.12",
+    "vulgar_film": {
+        "score_details": [
+            "not in movie range"
+        ],
+        "vulgar_score": 0
+    },
+    "weixin_import_type": 16,
+    "xi_title_error": {
+        "error_info": [],
+        "has_error": 0,
+        "is_delete": 0
+    },
+    "xijing_point": [],
+    "highlight": "<em>丈夫</em><em>出差</em><em>15</em><em>天</em><em>回来</em>，兴师问罪：你为什么一个电话都不打？我平静<em>回</em>复：打了，是你小女友和女儿接的电话，他顿时脸色惨白",
+    "goods_list": [],
+    "certify_url": "",
+    "timer_time": 0,
+    "similar_article_id": "",
+    "withdraw_status": {
+        "withdraw_msg": "",
+        "has_withdraw_times": {
+            "news": 3
+        },
+        "can_withdraw": -1
+    },
+    "modify_status": {
+        "edit_msg": "文章发布90天以上不能修改",
+        "can_edit": 0
+    },
+    "delete_status": {
+        "delete_msg": "",
+        "can_delete": 1
+    },
+    "recover_status": {
+        "recover_msg": "",
+        "can_recover": 0
+    },
+    "activity_list": [],
+    "dxxFinalAuditResult": "publish",
+    "read_amount": 91,
+    "comment_amount": 0,
+    "share_amount": 0,
+    "like_amount": 4,
+    "collection_amount": 0,
+    "profit": 0,
+    "is_ridewind": "1",
+    "is_show_adding": "0",
+    "is_show_add_view": "0",
+    "add_view_count": "0",
+    "coupons_add_view_count": "0",
+    "platform_add_view_count": "0",
+    "mcn_coupons_add_view_count": "0",
+    "other_coupons_add_view_count": "0",
+    "activity_ids": [],
+    "solicit_info": {
+        "tag": null,
+        "point": null,
+        "inspire": null
+    },
+    "can_set_commission": {
+        "status": -1,
+        "msg": "您的故事内容不满足质量要求无法设置分销，设置分销详细要求可查看"
+    },
+    "group_can_share": 0,
+    "group_already_shared": 0,
+    "show_selected_comment_option": 0,
+    "story_type": "free",
+    "flow_invest_status": 51,
+    "flow_invest_msg": "",
+    "package_invest_status": 0,
+    "audit_msg_color": "#666666",
+    "audit_msg_icon": "https://pic.rmb.bdstatic.com/bjh/aigc/aee44ec9fc2a01fcpng.png",
+    "is_ai": 1,
+    "playlet_pay2free_switch": 0,
+    "audit_type_v0": "",
+    "story_can_split": 0,
+    "story_commission_rate": 0,
+    "copyright_audit_status": 0,
+    "share_url": "https://mbd.baidu.com/newspage/data/dtlandingwise?sourceFrom=baijiahao&nid=dt_5122218040096410333",
+    "v_type": 0,
+    "v_intro": "",
+    "video_num": 0,
+    "can_edit_goods": 1,
+    "history_video_set_nids": "",
+    "history_video_set_failed_nids": "",
+    "auto_generate_id": "",
+    "author_trans_audio": 1,
+    "add_video_set_status": {
+        "can_add_video_set": 1,
+        "add_video_set_msg": ""
+    }
+}

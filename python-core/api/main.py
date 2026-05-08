@@ -727,11 +727,15 @@ def get_workers_status():
 
 
 @app.post("/workers/trigger")
-def trigger_worker(worker_name: str):
+def trigger_worker(worker_name: str, force_full: bool = False):
     """手动触发指定 Worker 立即执行一次（唤醒已有线程）"""
     from workers.scheduler import scheduler
-    if scheduler.trigger(worker_name):
-        return {"code": 10000, "message": f"{worker_name} 已触发执行"}
+    kwargs = {}
+    if worker_name in ("ArticleSyncWorker", "OrderSyncWorker") and force_full:
+        kwargs["force_full"] = True
+    if scheduler.trigger(worker_name, **kwargs):
+        label = "（全量模式）" if force_full else ""
+        return {"code": 10000, "message": f"{worker_name} 已触发执行{label}"}
     return {"code": 400, "message": f"未知的 Worker: {worker_name}"}
 
 
