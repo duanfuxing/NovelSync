@@ -128,12 +128,23 @@ class FileWatcherWorker(BaseWorker):
             
             try:
                 novel_id = art.article_id or ""
+                nid = art.nid or ""
                 print(f"[FileWatcher] 正在推送: {title} (novel_id={novel_id}, 字数: {word_count})")
-                
+
+                # 必填字段校验：novel_id、content、nid 任一为空则跳过
+                missing = []
                 if not novel_id:
-                    print(f"[FileWatcher] 跳过: article_id 为空，无法推送")
+                    missing.append("novel_id")
+                if not content.strip():
+                    missing.append("content")
+                if not nid:
+                    missing.append("nid")
+
+                if missing:
+                    err_msg = f"必填字段为空: {', '.join(missing)}"
+                    print(f"[FileWatcher] 跳过: {err_msg}")
                     task_record["sync_status"] = "failed"
-                    task_record["error_msg"] = "article_id 为空"
+                    task_record["error_msg"] = err_msg
                     upsert_book_sync_task(task_record, user_phone=user_phone)
                     continue
                 
@@ -142,7 +153,7 @@ class FileWatcherWorker(BaseWorker):
                     "title": title,
                     "content": content,
                     "word_count": word_count,
-                    "nid": art.nid or "",
+                    "nid": nid,
                     "app_id": art.app_id or "",
                     "feed_id": art.feed_id or "",
                     "abstract": art.abstract or "",
