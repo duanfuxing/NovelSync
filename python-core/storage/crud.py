@@ -2,6 +2,7 @@ from sqlmodel import Session, select, func, col
 from storage.database import engine
 from storage.models import ClientConfig, UserProfile, ClientBjhCookie, ClientArticle, ClientOrder, ClientBooksSyncTask, WorkerStatus
 from datetime import datetime
+import os
 
 
 def upsert_client_config(
@@ -62,6 +63,8 @@ def get_client_config(client_id: str) -> dict | None:
                 "phone": config.phone,
                 "vipLevel": config.vip_level,
                 "watchPath": config.watch_path,
+                "novelSyncEnabled": bool(config.novel_sync_enabled),
+                "materialOutputDir": config.material_output_dir,
             }
         return None
 
@@ -86,6 +89,98 @@ def set_watch_path(client_id: str, watch_path: str):
             print(f"[Storage] 监控目录已更新: {watch_path}")
         else:
             raise ValueError(f"客户端 {client_id} 不存在，请先登录")
+
+
+def get_novel_sync_enabled(client_id: str) -> bool:
+    """读取小说自动同步开关"""
+    with Session(engine) as session:
+        statement = select(ClientConfig).where(ClientConfig.client_id == client_id)
+        config = session.exec(statement).first()
+        return bool(config.novel_sync_enabled) if config else False
+
+
+def set_novel_sync_enabled(client_id: str, enabled: bool):
+    """保存小说自动同步开关"""
+    with Session(engine) as session:
+        statement = select(ClientConfig).where(ClientConfig.client_id == client_id)
+        config = session.exec(statement).first()
+        if config:
+            config.novel_sync_enabled = 1 if enabled else 0
+            session.add(config)
+            session.commit()
+            print(f"[Storage] 小说自动同步开关已更新: {enabled}")
+        else:
+            raise ValueError(f"客户端 {client_id} 不存在，请先登录")
+
+
+def get_material_output_dir(client_id: str) -> str | None:
+    """读取素材输出目录"""
+    with Session(engine) as session:
+        statement = select(ClientConfig).where(ClientConfig.client_id == client_id)
+        config = session.exec(statement).first()
+        return config.material_output_dir if config else None
+
+
+def set_material_output_dir(client_id: str, output_dir: str):
+    """保存素材输出目录到 client_config"""
+    with Session(engine) as session:
+        statement = select(ClientConfig).where(ClientConfig.client_id == client_id)
+        config = session.exec(statement).first()
+        if config:
+            config.material_output_dir = output_dir
+            session.add(config)
+            session.commit()
+            print(f"[Storage] 素材输出目录已更新: {output_dir}")
+        else:
+            raise ValueError(f"客户端 {client_id} 不存在，请先登录")
+
+
+def get_active_novel_sync_state() -> dict:
+    """读取当前登录配置的小说同步门禁状态"""
+    with Session(engine) as session:
+        config = session.exec(select(ClientConfig)).first()
+        return _novel_sync_state_from_config(config)
+
+
+def get_novel_sync_state(client_id: str) -> dict:
+    """按 client_id 读取小说同步门禁状态"""
+    with Session(engine) as session:
+        config = session.exec(select(ClientConfig).where(ClientConfig.client_id == client_id)).first()
+        return _novel_sync_state_from_config(config)
+
+
+def is_active_novel_sync_ready() -> bool:
+    """当前小说同步域是否允许执行"""
+    return bool(get_active_novel_sync_state()["ready"])
+
+
+def _novel_sync_state_from_config(config: ClientConfig | None) -> dict:
+    if not config:
+        return {
+            "enabled": False,
+            "watchPath": None,
+            "ready": False,
+            "reason": "未登录",
+        }
+
+    watch_path = config.watch_path
+    enabled = bool(config.novel_sync_enabled)
+    path_valid = bool(watch_path and os.path.isdir(watch_path))
+    if not enabled:
+        reason = "小说自动同步未启用"
+    elif not watch_path:
+        reason = "未设置小说监控目录"
+    elif not path_valid:
+        reason = f"小说监控目录不存在或不可访问: {watch_path}"
+    else:
+        reason = "小说自动同步可运行"
+
+    return {
+        "enabled": enabled,
+        "watchPath": watch_path,
+        "ready": enabled and path_valid,
+        "reason": reason,
+    }
 
 
 def clear_client_config(client_id: str):
@@ -725,8 +820,82 @@ def get_dashboard_stats(user_phone: str = "") -> dict:
             .where(ClientOrder.user_phone == user_phone)
         ).one()
 
+        novel_state = get_active_novel_sync_state()
+        novel_stats = {
+            "bjhCount": bjh_count,
+            "articleCount": article_count,
+            "totalOrderAmount": total_order_amount,
+            "enabled": novel_state["enabled"],
+            "ready": novel_state["ready"],
+            "reason": novel_state["reason"],
+        }
+        material_stats = get_material_dashboard_stats(user_phone=user_phone)
+
         return {
             "bjhCount": bjh_count,
             "articleCount": article_count,
             "totalOrderAmount": total_order_amount,
+            "novel": novel_stats,
+            "material": material_stats,
         }
+
+
+def _empty_material_dashboard_stats() -> dict:
+    return {
+        "taskCount": 0,
+        "successImageCount": 0,
+        "failedImageCount": 0,
+        "runningTaskCount": 0,
+        "todayImageCount": 0,
+        "latestTask": None,
+    }
+
+
+def _safe_int(value) -> int:
+    try:
+        return int(value or 0)
+    except (TypeError, ValueError):
+        return 0
+
+
+def normalize_material_dashboard_stats(raw: dict | None) -> dict:
+    if not isinstance(raw, dict):
+        return _empty_material_dashboard_stats()
+
+    latest = raw.get("latestTask")
+    return {
+        "taskCount": _safe_int(raw.get("taskCount")),
+        "successImageCount": _safe_int(raw.get("successImageCount")),
+        "failedImageCount": _safe_int(raw.get("failedImageCount")),
+        "runningTaskCount": _safe_int(raw.get("runningTaskCount")),
+        "todayImageCount": _safe_int(raw.get("todayImageCount")),
+        "latestTask": {
+            "title": latest.get("title") or "素材制作任务",
+            "status": latest.get("statusText") or latest.get("status") or "",
+            "successCount": _safe_int(latest.get("successCount")),
+            "failedCount": _safe_int(latest.get("failedCount")),
+            "requestedCount": _safe_int(latest.get("requestedCount")),
+            "createdAt": latest.get("createdAt") or "",
+        } if isinstance(latest, dict) else None,
+    }
+
+
+def get_material_dashboard_stats(user_phone: str = "") -> dict:
+    fallback = _empty_material_dashboard_stats()
+    try:
+        from core.miaobi_client import MiaobiClient
+
+        res = MiaobiClient().get_material_stats()
+        if res.get("code") != 10000:
+            return fallback
+        return normalize_material_dashboard_stats(res.get("data"))
+    except Exception as e:
+        print(f"[Dashboard] 素材制作统计读取失败: {e}")
+        return fallback
+
+
+def get_active_material_output_dir() -> str | None:
+    """读取当前活动配置的素材输出目录"""
+    with Session(engine) as session:
+        config = session.exec(select(ClientConfig)).first()
+        return config.material_output_dir if config else None

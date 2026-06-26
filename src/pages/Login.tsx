@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { Form, Input, Button, Card, Typography, message, Space } from 'antd';
+import { App as AntdApp, Form, Input, Button, Card, Typography, Space } from 'antd';
 import { MobileOutlined, SafetyCertificateOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -10,6 +10,7 @@ const LOCAL_API = import.meta.env.VITE_LOCAL_API_BASE_URL;
 
 const Login: React.FC = () => {
   const [form] = Form.useForm();
+  const { message } = AntdApp.useApp();
   const [sendingCode, setSendingCode] = useState(false);
   const [loginLoading, setLoginLoading] = useState(false);
   const [countdown, setCountdown] = useState(0);

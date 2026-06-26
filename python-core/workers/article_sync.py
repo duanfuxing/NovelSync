@@ -2,16 +2,21 @@ from datetime import datetime
 import config
 from workers.base_worker import BaseWorker
 from core.baijiahao_client import BaijiahaoClient
-from storage.crud import get_all_bjh_cookies, upsert_articles, get_latest_article_date, get_active_user_phone
+from storage.crud import get_all_bjh_cookies, upsert_articles, get_latest_article_date, get_active_user_phone, get_active_novel_sync_state
 
 class ArticleSyncWorker(BaseWorker):
     """百家号文章数据抓取入库（仅入库，推送由 FileWatcherWorker 负责）"""
     interval = config.WORKER_INTERVAL_ARTICLE_SYNC
+    requires_novel_sync = True
 
     def process(self):
         force_full = self._trigger_kwargs.get("force_full", False)
         mode_label = "全量（强制）" if force_full else "增量"
         print(f"[ArticleSync] 开启定时文章同步任务... 模式: {mode_label}")
+        sync_state = get_active_novel_sync_state()
+        if not sync_state["ready"]:
+            print(f"[ArticleSync] 小说同步门禁未通过，跳过: {sync_state['reason']}")
+            return
 
         user_phone = get_active_user_phone()
         if not user_phone:
@@ -58,4 +63,3 @@ class ArticleSyncWorker(BaseWorker):
             end_date = datetime.now().strftime("%Y-%m-%d")
             return latest_date, end_date
         return "", ""
-

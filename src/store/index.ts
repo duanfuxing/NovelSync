@@ -19,12 +19,16 @@ interface AppState {
   sessionLoading: boolean;
   watchPath: string | null;         // 本地监控目录
   watchPathChecked: boolean;        // 是否已完成检查（防止弹窗闪烁）
+  novelSyncEnabled: boolean;        // 小说自动同步开关
+  novelSyncReady: boolean;          // 小说同步是否满足运行条件
+  novelSyncReason: string;          // 小说同步当前不可用原因
 
   setAuth: (token: string, uid: string, profile: UserProfile) => void;
   logout: () => void;
   restoreSession: () => Promise<boolean>;
   checkWatchPath: () => Promise<void>;
   setWatchPath: (path: string) => void;
+  setNovelSyncState: (state: { enabled: boolean; ready: boolean; reason?: string; watchPath?: string | null }) => void;
 }
 
 // 借用写死的 Mock MAC, 实际这里会被替换成 Tauri 获取的主板码
@@ -38,6 +42,9 @@ export const useAppStore = create<AppState>((set, get) => ({
   sessionLoading: true,
   watchPath: null,
   watchPathChecked: false,
+  novelSyncEnabled: false,
+  novelSyncReady: false,
+  novelSyncReason: '小说自动同步未启用',
 
   setAuth: (token, uid, profile) => {
     localStorage.setItem('token', token);
@@ -56,7 +63,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
     localStorage.removeItem('token');
     localStorage.removeItem('uid');
-    set({ token: null, uid: null, userProfile: null, watchPath: null, watchPathChecked: false });
+    set({ token: null, uid: null, userProfile: null, watchPath: null, watchPathChecked: false, novelSyncEnabled: false, novelSyncReady: false, novelSyncReason: '小说自动同步未启用' });
   },
 
   restoreSession: async () => {
@@ -94,30 +101,44 @@ export const useAppStore = create<AppState>((set, get) => ({
     // Token 无效，清除本地状态
     localStorage.removeItem('token');
     localStorage.removeItem('uid');
-    set({ token: null, uid: null, userProfile: null, sessionLoading: false, watchPathChecked: true });
+    set({ token: null, uid: null, userProfile: null, sessionLoading: false, watchPathChecked: true, novelSyncEnabled: false, novelSyncReady: false, novelSyncReason: '小说自动同步未启用' });
     return false;
   },
 
-  /** 检查本地是否已设置监控目录 */
+  /** 检查小说同步开关和本地监控目录 */
   checkWatchPath: async () => {
     const { clientId } = get();
     try {
-      const res = await axios.get(`${LOCAL_API}/settings/watch-path`, {
+      const res = await axios.get(`${LOCAL_API}/settings/novel-sync`, {
         params: { client_id: clientId },
       });
       if (res.data.code === 10000) {
         const path = res.data.data?.watchPath ?? null;
-        set({ watchPath: path, watchPathChecked: true });
+        const enabled = Boolean(res.data.data?.enabled);
+        const ready = Boolean(res.data.data?.ready);
+        const reason = res.data.data?.reason ?? (enabled ? '小说同步未就绪' : '小说自动同步未启用');
+        set({ watchPath: path, novelSyncEnabled: enabled, novelSyncReady: ready, novelSyncReason: reason, watchPathChecked: true });
         return;
       }
     } catch (e) {
-      console.error('[Store] checkWatchPath failed', e);
+      console.error('[Store] check novel-sync failed', e);
     }
-    set({ watchPath: null, watchPathChecked: true });
+    set({ watchPath: null, novelSyncEnabled: false, novelSyncReady: false, novelSyncReason: '小说同步状态读取失败', watchPathChecked: true });
   },
 
   /** 登录成功后或设置页保存后调用，更新全局状态 */
   setWatchPath: (path: string) => {
     set({ watchPath: path });
+  },
+
+  /** 设置页读取/保存后同步小说同步完整状态 */
+  setNovelSyncState: (state) => {
+    set({
+      novelSyncEnabled: state.enabled,
+      novelSyncReady: state.ready,
+      novelSyncReason: state.reason ?? '后端未返回小说同步状态',
+      watchPath: state.watchPath ?? get().watchPath,
+      watchPathChecked: true,
+    });
   },
 }));

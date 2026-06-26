@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Avatar, Badge, Card, Col, Empty, message, Row, Spin, Tag, Typography } from 'antd';
-import { CheckCircleFilled, ReloadOutlined, SyncOutlined } from '@ant-design/icons';
+import { App as AntdApp, Avatar, Badge, Button, Card, Col, Empty, Row, Spin, Tag, Typography } from 'antd';
+import { CheckCircleFilled, ReloadOutlined, SettingOutlined, SyncOutlined } from '@ant-design/icons';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '../store';
 
 const { Text, Title } = Typography;
@@ -28,7 +29,9 @@ interface BjhCookie {
 }
 
 const BjhList: React.FC = () => {
-  const { token } = useAppStore();
+  const navigate = useNavigate();
+  const { message } = AntdApp.useApp();
+  const { novelSyncReady, novelSyncReason } = useAppStore();
   const [cookies, setCookies] = useState<BjhCookie[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
@@ -70,12 +73,34 @@ const BjhList: React.FC = () => {
   };
 
   useEffect(() => {
+    if (!novelSyncReady) {
+      setLoading(false);
+      return;
+    }
     fetchCookies().then(() => setLoading(false));
     timerRef.current = setInterval(() => fetchCookies(), POLL_INTERVAL_MS);
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [novelSyncReady]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (!novelSyncReady) {
+    return (
+      <Card
+        style={{ borderRadius: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}
+        styles={{ body: { padding: 56, textAlign: 'center' } }}
+      >
+        <SettingOutlined style={{ fontSize: 46, color: '#1677ff', marginBottom: 16 }} />
+        <Title level={4} style={{ margin: '0 0 8px' }}>百家号同步未启用</Title>
+        <Text type="secondary" style={{ display: 'block', marginBottom: 24 }}>
+          {novelSyncReason || '请先在设置中启用小说自动同步并配置小说监控目录。'}
+        </Text>
+        <Button type="primary" icon={<SettingOutlined />} onClick={() => navigate('/settings')}>
+          前往设置
+        </Button>
+      </Card>
+    );
+  }
 
   return (
     <div style={{ padding: '0 0 24px' }}>
@@ -148,7 +173,8 @@ const BjhList: React.FC = () => {
       {/* 卡片列表 */}
       {loading ? (
         <div style={{ textAlign: 'center', padding: 80 }}>
-          <Spin size="large" tip="正在从云端同步百家号数据..." />
+          <Spin size="large" />
+          <Text type="secondary" style={{ display: 'block', marginTop: 12 }}>正在从云端同步百家号数据...</Text>
         </div>
       ) : cookies.length === 0 ? (
         <Empty
@@ -172,7 +198,7 @@ const BjhList: React.FC = () => {
                   boxShadow: '0 2px 8px rgba(22, 119, 255, 0.06)',
                   transition: 'all 0.25s',
                 }}
-                bodyStyle={{ padding: '20px 20px 16px' }}
+                styles={{ body: { padding: '20px 20px 16px' } }}
               >
                 {/* 头像 + 在线状态 */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14 }}>

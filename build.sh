@@ -202,7 +202,7 @@ PATCH
     fi
 
     # 子目录列表，只添加存在的目录
-    local sub_dirs=("api" "core" "storage" "manager" "workers" "utils" "monitor")
+    local sub_dirs=("api" "core" "storage" "manager" "workers" "utils" "monitor" "material_generation")
     local extra_add_data=""
     for d in "${sub_dirs[@]}"; do
         if [[ -d "$PYTHON_CORE/$d" ]]; then
@@ -238,6 +238,7 @@ sys.argv = ['pyinstaller',
 $extra_add_data    '--add-data=$PYTHON_CORE/config.py${sep}.',
     '--hidden-import=api',
     '--hidden-import=api.main',
+    '--hidden-import=api.material_generation',
     '--hidden-import=core',
     '--hidden-import=core.miaobi_client',
     '--hidden-import=core.baijiahao_client',
@@ -249,6 +250,12 @@ $extra_add_data    '--add-data=$PYTHON_CORE/config.py${sep}.',
     '--hidden-import=manager.sync_manager',
     '--hidden-import=workers',
     '--hidden-import=workers.scheduler',
+    '--hidden-import=material_generation',
+    '--hidden-import=material_generation.settings',
+    '--hidden-import=material_generation.prompt_service',
+    '--hidden-import=material_generation.image_service',
+    '--hidden-import=material_generation.task_runner',
+    '--hidden-import=material_generation.schemas',
     '--hidden-import=config',
     '--hidden-import=uvicorn.logging',
     '--hidden-import=uvicorn.loops',

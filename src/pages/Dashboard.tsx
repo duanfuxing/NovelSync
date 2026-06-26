@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Typography, Tag, Row, Col, Statistic, Spin, Button, message, Dropdown } from 'antd';
+import { App as AntdApp, Card, Typography, Tag, Row, Col, Statistic, Spin, Button, Dropdown } from 'antd';
 import {
+  SettingOutlined,
   IdcardOutlined,
   FileTextOutlined,
   DollarOutlined,
+  PictureOutlined,
+  FileImageOutlined,
   CheckCircleFilled,
   SyncOutlined,
   ClockCircleOutlined,
@@ -13,6 +16,8 @@ import {
   HistoryOutlined,
 } from '@ant-design/icons';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { useAppStore } from '../store';
 
 const { Title, Text } = Typography;
 const LOCAL_API = import.meta.env.VITE_LOCAL_API_BASE_URL;
@@ -21,6 +26,29 @@ interface DashboardStats {
   bjhCount: number;
   articleCount: number;
   totalOrderAmount: number;
+  novel?: {
+    bjhCount: number;
+    articleCount: number;
+    totalOrderAmount: number;
+    enabled: boolean;
+    ready: boolean;
+    reason: string;
+  };
+  material?: {
+    taskCount: number;
+    successImageCount: number;
+    failedImageCount: number;
+    runningTaskCount: number;
+    todayImageCount: number;
+    latestTask?: {
+      title: string;
+      status: string;
+      successCount: number;
+      failedCount: number;
+      requestedCount: number;
+      createdAt: string;
+    } | null;
+  };
 }
 
 interface WorkerStatusItem {
@@ -58,6 +86,9 @@ const formatCountdown = (seconds: number): string => {
 };
 
 const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
+  const { message } = AntdApp.useApp();
+  const { novelSyncReady, novelSyncReason } = useAppStore();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [workers, setWorkers] = useState<WorkerStatusItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -113,198 +144,331 @@ const Dashboard: React.FC = () => {
   if (loading) {
     return (
       <div style={{ textAlign: 'center', padding: 120 }}>
-        <Spin size="large" tip="加载中..." />
+        <Spin size="large" />
+        <Text type="secondary" style={{ display: 'block', marginTop: 12 }}>加载中...</Text>
       </div>
     );
   }
 
-  const statCards = [
+  const novelStats = stats?.novel ?? {
+    bjhCount: stats?.bjhCount ?? 0,
+    articleCount: stats?.articleCount ?? 0,
+    totalOrderAmount: stats?.totalOrderAmount ?? 0,
+    enabled: novelSyncReady,
+    ready: novelSyncReady,
+    reason: novelSyncReason,
+  };
+  const materialStats = stats?.material ?? {
+    taskCount: 0,
+    successImageCount: 0,
+    failedImageCount: 0,
+    runningTaskCount: 0,
+    todayImageCount: 0,
+    latestTask: null,
+  };
+  const novelReady = Boolean(novelStats.ready && novelSyncReady);
+  const novelUnavailableTitle = novelStats.enabled ? '小说同步未就绪' : '小说同步未开启';
+  const novelUnavailableReason = novelStats.reason || novelSyncReason || '开启并完成配置后，系统会自动恢复同步统计和任务进程。';
+
+  const novelStatCards = [
     {
       title: '百家号总数',
-      value: stats?.bjhCount ?? 0,
+      value: novelReady ? novelStats.bjhCount : '--',
       icon: <IdcardOutlined />,
       color: '#1677ff',
       bg: 'linear-gradient(135deg, #e8f4fd 0%, #d6e8fa 100%)',
     },
     {
       title: '已发布文章',
-      value: stats?.articleCount ?? 0,
+      value: novelReady ? novelStats.articleCount : '--',
       icon: <FileTextOutlined />,
       color: '#52c41a',
       bg: 'linear-gradient(135deg, #f0f9eb 0%, #d9f2c7 100%)',
     },
     {
       title: '订单总金额',
-      value: stats?.totalOrderAmount ?? 0,
+      value: novelReady ? novelStats.totalOrderAmount : '--',
       icon: <DollarOutlined />,
       color: '#faad14',
       bg: 'linear-gradient(135deg, #fffbe6 0%, #fff1b8 100%)',
     },
   ];
 
+  const materialStatCards = [
+    {
+      title: '素材任务数',
+      value: materialStats.taskCount,
+      icon: <PictureOutlined />,
+      color: '#1677ff',
+    },
+    {
+      title: '成功图片',
+      value: materialStats.successImageCount,
+      icon: <CheckCircleFilled />,
+      color: '#52c41a',
+    },
+    {
+      title: '失败图片',
+      value: materialStats.failedImageCount,
+      icon: <ExclamationCircleFilled />,
+      color: '#ff4d4f',
+    },
+    {
+      title: '今日生成',
+      value: materialStats.todayImageCount,
+      icon: <FileImageOutlined />,
+      color: '#722ed1',
+    },
+  ];
+
+  const workerStatusGrid = (
+    <Row gutter={[12, 12]}>
+      {workers.map((w) => {
+        const cfg = STATUS_CONFIG[w.status] ?? STATUS_CONFIG.idle;
+        const label = WORKER_LABEL_MAP[w.workerName] ?? w.workerName;
+        return (
+          <Col span={6} key={w.workerName}>
+            <div
+              style={{
+                padding: '16px',
+                borderRadius: 10,
+                border: '1px solid #f0f0f0',
+                background: '#fafafa',
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 10,
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ color: cfg.color, fontSize: 14 }}>{cfg.icon}</span>
+                  <Text style={{ fontWeight: 600, fontSize: 13 }}>{label}</Text>
+                </div>
+                <Tag
+                  color={cfg.tagColor}
+                  style={{ borderRadius: 4, fontSize: 11, margin: 0 }}
+                >
+                  {cfg.text}
+                </Tag>
+              </div>
+
+              {(() => {
+                if (w.status === 'running') {
+                  return <Text type="secondary" style={{ fontSize: 11 }}>执行中...</Text>;
+                }
+                if (w.status === 'error') {
+                  return <Text type="danger" style={{ fontSize: 11 }}>{w.message || '异常，等待重试...'}</Text>;
+                }
+                const baseTime = w.lastSuccessAt || w.updatedAt;
+                if (baseTime && w.intervalSeconds) {
+                  const nextRun = new Date(baseTime + 'Z').getTime() + w.intervalSeconds * 1000;
+                  const remaining = Math.max(0, Math.floor((nextRun - now) / 1000));
+                  return (
+                    <Text type="secondary" style={{ fontSize: 11 }}>
+                      {w.lastSuccessAt ? '下次运行' : '首次运行'}: <span style={{ fontFamily: 'monospace', color: remaining <= 60 ? '#faad14' : '#666' }}>{formatCountdown(remaining)}</span>
+                    </Text>
+                  );
+                }
+                return <Text type="secondary" style={{ fontSize: 11 }}>等待首次运行</Text>;
+              })()}
+
+              {['ArticleSyncWorker', 'OrderSyncWorker'].includes(w.workerName) ? (
+                <Dropdown
+                  disabled={!novelReady}
+                  menu={{
+                    items: [
+                      {
+                        key: 'incremental',
+                        icon: <ThunderboltOutlined />,
+                        label: '增量同步',
+                        onClick: () => triggerWorker(w.workerName),
+                      },
+                      {
+                        key: 'full',
+                        icon: <HistoryOutlined />,
+                        label: '全量同步（历史全部）',
+                        onClick: () => triggerWorker(w.workerName, true),
+                      },
+                    ],
+                  }}
+                  trigger={['click']}
+                >
+                  <Button
+                    size="small"
+                    type="primary"
+                    ghost
+                    icon={<ThunderboltOutlined />}
+                    loading={triggering === w.workerName}
+                    disabled={!novelReady}
+                    style={{ fontSize: 12, height: 28 }}
+                    block
+                  >
+                    立即同步 <DownOutlined style={{ fontSize: 10, marginLeft: 2 }} />
+                  </Button>
+                </Dropdown>
+              ) : (
+                <Button
+                  size="small"
+                  type="primary"
+                  ghost
+                  icon={<ThunderboltOutlined />}
+                  loading={triggering === w.workerName}
+                  onClick={() => triggerWorker(w.workerName)}
+                  disabled={!novelReady}
+                  style={{ fontSize: 12, height: 28 }}
+                  block
+                >
+                  立即同步
+                </Button>
+              )}
+            </div>
+          </Col>
+        );
+      })}
+    </Row>
+  );
+
   return (
     <div style={{ display: 'flex', gap: 20, flexDirection: 'column' }}>
-      {/* 第一排：统计卡片 */}
-      <Row gutter={20}>
-        {statCards.map((item) => (
-          <Col span={8} key={item.title}>
-            <Card
-              bordered={false}
-              style={{
-                borderRadius: 12,
-                boxShadow: '0 2px 10px rgba(0,0,0,0.04)',
-                background: item.bg,
-              }}
-              bodyStyle={{ padding: '24px 28px' }}
-            >
-              <Statistic
-                title={<Text style={{ color: '#666', fontSize: 13 }}>{item.title}</Text>}
-                value={item.value}
-                valueStyle={{ color: item.color, fontWeight: 700, fontSize: 32 }}
-                prefix={React.cloneElement(item.icon as React.ReactElement, {
-                  style: { fontSize: 20, marginRight: 6 },
-                })}
-              />
-            </Card>
-          </Col>
-        ))}
-      </Row>
-
-      {/* 第二排：进程状态 */}
       <Card
-        bordered={false}
-        style={{ borderRadius: 12, boxShadow: '0 2px 10px rgba(0,0,0,0.04)' }}
-        bodyStyle={{ padding: '20px 24px' }}
+        variant="borderless"
+        style={{ position: 'relative', overflow: 'hidden', borderRadius: 12, boxShadow: '0 2px 10px rgba(0,0,0,0.04)' }}
+        styles={{ body: { padding: '20px 24px' } }}
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Title level={5} style={{ margin: 0 }}>小说同步</Title>
+            {novelReady ? (
+              <Tag color="success" style={{ borderRadius: 4, margin: 0 }}>运行中</Tag>
+            ) : (
+              <Tag color="default" style={{ borderRadius: 4, margin: 0 }}>{novelStats.enabled ? '未就绪' : '未开启'}</Tag>
+            )}
+          </div>
+        }
       >
-        <Title level={5} style={{ margin: '0 0 16px', fontWeight: 700 }}>
-          进程状态
-        </Title>
-
-        {/* 主进程 */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 12,
-            padding: '10px 16px',
-            background: '#f6ffed',
-            borderRadius: 8,
-            border: '1px solid #b7eb8f',
-            marginBottom: 16,
-          }}
-        >
-          <CheckCircleFilled style={{ color: '#52c41a', fontSize: 16 }} />
-          <Text style={{ fontWeight: 600, fontSize: 13, flex: 1 }}>主进程 (API Server)</Text>
-          <Tag color="success" style={{ borderRadius: 4, margin: 0 }}>运行中</Tag>
-        </div>
-
-        {/* Worker 子进程 */}
-        <Row gutter={[12, 12]}>
-          {workers.map((w) => {
-            const cfg = STATUS_CONFIG[w.status] ?? STATUS_CONFIG.idle;
-            const label = WORKER_LABEL_MAP[w.workerName] ?? w.workerName;
-            return (
-              <Col span={6} key={w.workerName}>
-                <div
-                  style={{
-                    padding: '16px',
-                    borderRadius: 10,
-                    border: '1px solid #f0f0f0',
-                    background: '#fafafa',
-                    height: '100%',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 10,
-                  }}
-                >
-                  {/* 顶部：名称 + 状态 */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span style={{ color: cfg.color, fontSize: 14 }}>{cfg.icon}</span>
-                      <Text style={{ fontWeight: 600, fontSize: 13 }}>{label}</Text>
-                    </div>
-                    <Tag
-                      color={cfg.tagColor}
-                      style={{ borderRadius: 4, fontSize: 11, margin: 0 }}
-                    >
-                      {cfg.text}
-                    </Tag>
+        <div style={{ minHeight: 250 }}>
+          <div
+            style={{
+              opacity: novelReady ? 1 : 0.35,
+              filter: novelReady ? 'none' : 'blur(1px)',
+              pointerEvents: novelReady ? 'auto' : 'none',
+              transition: 'opacity 0.2s ease, filter 0.2s ease',
+            }}
+          >
+            <Row gutter={12} style={{ marginBottom: 18 }}>
+              {novelStatCards.map((item) => (
+                <Col span={8} key={item.title}>
+                  <div style={{ padding: '14px 12px', borderRadius: 8, background: novelReady ? '#fafafa' : '#f5f5f5', opacity: novelReady ? 1 : 0.72 }}>
+                    <Statistic
+                      title={<Text style={{ color: '#666', fontSize: 12 }}>{item.title}</Text>}
+                      value={item.value}
+                      valueStyle={{ color: novelReady ? item.color : '#999', fontWeight: 700, fontSize: 24 }}
+                      prefix={React.cloneElement(item.icon as React.ReactElement, {
+                        style: { fontSize: 16, marginRight: 4 },
+                      })}
+                    />
                   </div>
+                </Col>
+              ))}
+            </Row>
 
-                  {/* 下次运行倒计时 */}
-                  {(() => {
-                    if (w.status === 'running') {
-                      return <Text type="secondary" style={{ fontSize: 11 }}>执行中...</Text>;
-                    }
-                    if (w.status === 'error') {
-                      return <Text type="danger" style={{ fontSize: 11 }}>{w.message || '异常，等待重试...'}</Text>;
-                    }
-                    // 优先用 lastSuccessAt，首次启动时 fallback 到 updatedAt（注册时间）
-                    const baseTime = w.lastSuccessAt || w.updatedAt;
-                    if (baseTime && w.intervalSeconds) {
-                      const nextRun = new Date(baseTime + 'Z').getTime() + w.intervalSeconds * 1000;
-                      const remaining = Math.max(0, Math.floor((nextRun - now) / 1000));
-                      return (
-                        <Text type="secondary" style={{ fontSize: 11 }}>
-                          {w.lastSuccessAt ? '下次运行' : '首次运行'}: <span style={{ fontFamily: 'monospace', color: remaining <= 60 ? '#faad14' : '#666' }}>{formatCountdown(remaining)}</span>
-                        </Text>
-                      );
-                    }
-                    return <Text type="secondary" style={{ fontSize: 11 }}>等待首次运行</Text>;
-                  })()}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                padding: '10px 16px',
+                background: '#f6ffed',
+                borderRadius: 8,
+                border: '1px solid #b7eb8f',
+                marginBottom: 16,
+              }}
+            >
+              <CheckCircleFilled style={{ color: '#52c41a', fontSize: 16 }} />
+              <Text style={{ fontWeight: 600, fontSize: 13, flex: 1 }}>主进程 (API Server)</Text>
+              <Tag color="success" style={{ borderRadius: 4, margin: 0 }}>运行中</Tag>
+            </div>
 
-                  {/* 操作按钮 */}
-                  {['ArticleSyncWorker', 'OrderSyncWorker'].includes(w.workerName) ? (
-                    <Dropdown
-                      menu={{
-                        items: [
-                          {
-                            key: 'incremental',
-                            icon: <ThunderboltOutlined />,
-                            label: '增量同步',
-                            onClick: () => triggerWorker(w.workerName),
-                          },
-                          {
-                            key: 'full',
-                            icon: <HistoryOutlined />,
-                            label: '全量同步（历史全部）',
-                            onClick: () => triggerWorker(w.workerName, true),
-                          },
-                        ],
-                      }}
-                      trigger={['click']}
-                    >
-                      <Button
-                        size="small"
-                        type="primary"
-                        ghost
-                        icon={<ThunderboltOutlined />}
-                        loading={triggering === w.workerName}
-                        style={{ fontSize: 12, height: 28 }}
-                        block
-                      >
-                        立即同步 <DownOutlined style={{ fontSize: 10, marginLeft: 2 }} />
-                      </Button>
-                    </Dropdown>
-                  ) : (
-                    <Button
-                      size="small"
-                      type="primary"
-                      ghost
-                      icon={<ThunderboltOutlined />}
-                      loading={triggering === w.workerName}
-                      onClick={() => triggerWorker(w.workerName)}
-                      style={{ fontSize: 12, height: 28 }}
-                      block
-                    >
-                      立即同步
-                    </Button>
-                  )}
-                </div>
-              </Col>
-            );
-          })}
+            {workerStatusGrid}
+          </div>
+        </div>
+        {!novelReady && (
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              zIndex: 2,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: 12,
+              background: 'rgba(255, 255, 255, 0.78)',
+              backdropFilter: 'blur(2px)',
+            }}
+          >
+            <div
+              style={{
+                width: '100%',
+                height: '100%',
+                maxWidth: '88%',
+                padding: '22px 24px',
+                textAlign: 'center',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <SettingOutlined style={{ fontSize: 28, color: '#8c8c8c', marginBottom: 10 }} />
+              <Title level={5} style={{ margin: 0 }}>{novelUnavailableTitle}</Title>
+              <Text type="secondary" style={{ display: 'block', marginTop: 8, marginBottom: 16, fontSize: 12 }}>
+                {novelUnavailableReason}
+              </Text>
+              <Button type="primary" icon={<SettingOutlined />} onClick={() => navigate('/settings')}>
+                去设置
+              </Button>
+            </div>
+          </div>
+        )}
+      </Card>
+
+      <Card
+        variant="borderless"
+        style={{ borderRadius: 12, boxShadow: '0 2px 10px rgba(0,0,0,0.04)' }}
+        styles={{ body: { padding: '20px 24px' } }}
+        title={
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Title level={5} style={{ margin: 0 }}>素材制作</Title>
+            <Tag color={materialStats.runningTaskCount > 0 ? 'processing' : 'success'} style={{ borderRadius: 4, margin: 0 }}>
+              {materialStats.runningTaskCount > 0 ? `${materialStats.runningTaskCount} 个任务运行中` : '待命中'}
+            </Tag>
+          </div>
+        }
+      >
+        <Row gutter={12}>
+          {materialStatCards.map((item) => (
+            <Col span={6} key={item.title}>
+              <div style={{ padding: '14px 10px', borderRadius: 8, background: '#fafafa' }}>
+                <Statistic
+                  title={<Text style={{ color: '#666', fontSize: 12 }}>{item.title}</Text>}
+                  value={item.value}
+                  valueStyle={{ color: item.color, fontWeight: 700, fontSize: 24 }}
+                  prefix={React.cloneElement(item.icon as React.ReactElement, {
+                    style: { fontSize: 16, marginRight: 4 },
+                  })}
+                />
+              </div>
+            </Col>
+          ))}
         </Row>
+        <div style={{ marginTop: 14, padding: '10px 12px', borderRadius: 8, background: '#f7f9fc', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Text type="secondary" style={{ fontSize: 12 }}>
+            最近任务：{materialStats.latestTask?.title || '暂无任务'}
+          </Text>
+          <Button size="small" type="link" onClick={() => navigate('/material-generation')} style={{ padding: 0 }}>
+            查看素材生成
+          </Button>
+        </div>
       </Card>
     </div>
   );

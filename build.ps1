@@ -200,7 +200,7 @@ function Build-PythonBackend {
     )
 
     # 子目录列表：目录存在才加入参数
-    $subDirs = @('api','core','storage','manager','workers','utils','monitor')
+    $subDirs = @('api','core','storage','manager','workers','utils','monitor','material_generation')
     foreach ($d in $subDirs) {
         $dirPath = Join-Path $PythonCore $d
         if (Test-Path $dirPath) {
@@ -214,6 +214,7 @@ function Build-PythonBackend {
     $pyArgs += @(
         '--hidden-import', 'api',
         '--hidden-import', 'api.main',
+        '--hidden-import', 'api.material_generation',
         '--hidden-import', 'core',
         '--hidden-import', 'core.miaobi_client',
         '--hidden-import', 'core.baijiahao_client',
@@ -225,6 +226,12 @@ function Build-PythonBackend {
         '--hidden-import', 'manager.sync_manager',
         '--hidden-import', 'workers',
         '--hidden-import', 'workers.scheduler',
+        '--hidden-import', 'material_generation',
+        '--hidden-import', 'material_generation.settings',
+        '--hidden-import', 'material_generation.prompt_service',
+        '--hidden-import', 'material_generation.image_service',
+        '--hidden-import', 'material_generation.task_runner',
+        '--hidden-import', 'material_generation.schemas',
         '--hidden-import', 'config',
         '--hidden-import', 'uvicorn.logging',
         '--hidden-import', 'uvicorn.loops',

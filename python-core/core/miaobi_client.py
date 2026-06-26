@@ -98,3 +98,55 @@ class MiaobiClient:
         :return: {"code": 200, "data": {"total_received": N, "success_count": N, "failed_ids": []}}
         """
         return self._post("baijiahao-sync/v1/sync/novelOrders", orders)
+
+    # ========== 4. 百度小说素材制作 ==========
+
+    def get_material_config(self) -> dict:
+        return self._get("baijiahao-sync/v1/material/config")
+
+    def get_material_stats(self) -> dict:
+        return self._get("baijiahao-sync/v1/material/stats")
+
+    def create_material_task(self, payload: dict) -> dict:
+        return self._post("baijiahao-sync/v1/material/tasks", payload)
+
+    def list_material_tasks(
+        self,
+        page: int = 1,
+        page_size: int = 20,
+        status: int | None = None,
+        title: str | None = None,
+        start_date: str | None = None,
+        end_date: str | None = None,
+    ) -> dict:
+        params = {"currentPage": page, "_limit": page_size}
+        if status is not None:
+            params["status"] = status
+        if title:
+            params["title"] = title
+        if start_date:
+            params["startDate"] = start_date
+        if end_date:
+            params["endDate"] = end_date
+        return self._get("baijiahao-sync/v1/material/tasks", params=params)
+
+    def get_material_tasks_progress(self, task_nos: list[str]) -> dict:
+        return self._get(
+            "baijiahao-sync/v1/material/tasks/progress",
+            params={"taskNos": ",".join(task_nos)},
+        )
+
+    def get_material_task(self, task_no: str) -> dict:
+        return self._get(f"baijiahao-sync/v1/material/tasks/{task_no}")
+
+    def get_material_task_images(self, task_no: str) -> dict:
+        return self._get(f"baijiahao-sync/v1/material/tasks/{task_no}/images")
+
+    def cancel_material_task(self, task_no: str) -> dict:
+        return self._post(f"baijiahao-sync/v1/material/tasks/{task_no}/cancel")
+
+    def retry_material_failed(self, task_no: str) -> dict:
+        return self._post(f"baijiahao-sync/v1/material/tasks/{task_no}/retry-failed")
+
+    def retry_material_image(self, item_no: str, image_no: str) -> dict:
+        return self._post(f"baijiahao-sync/v1/material/items/{item_no}/images/{image_no}/retry")

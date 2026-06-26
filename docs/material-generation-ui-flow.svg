@@ -1,0 +1,185 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1200" viewBox="0 0 1600 1200">
+  <defs>
+    <style>
+      .bg { fill: #f5f7fb; }
+      .frame { fill: #ffffff; stroke: #d9e0ea; stroke-width: 1.5; }
+      .panel { fill: #ffffff; stroke: #d9e0ea; stroke-width: 1.2; rx: 8; }
+      .subtle { fill: #f8fafc; stroke: #e6ebf2; stroke-width: 1; rx: 6; }
+      .primary { fill: #1677ff; }
+      .success { fill: #52c41a; }
+      .warning { fill: #faad14; }
+      .danger { fill: #ff4d4f; }
+      .muted { fill: #8c8c8c; }
+      .text { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", Arial, sans-serif; fill: #1f2937; }
+      .title { font-size: 24px; font-weight: 700; }
+      .h2 { font-size: 18px; font-weight: 700; }
+      .h3 { font-size: 15px; font-weight: 700; }
+      .body { font-size: 13px; }
+      .small { font-size: 11px; fill: #64748b; }
+      .buttonText { font-size: 13px; fill: #ffffff; font-weight: 600; }
+      .line { stroke: #94a3b8; stroke-width: 1.5; fill: none; marker-end: url(#arrow); }
+      .lineStrong { stroke: #1677ff; stroke-width: 2; fill: none; marker-end: url(#arrowBlue); }
+      .dash { stroke: #94a3b8; stroke-width: 1.5; stroke-dasharray: 6 5; fill: none; marker-end: url(#arrow); }
+      .tag { fill: #eef6ff; stroke: #91caff; stroke-width: 1; rx: 4; }
+      .tagText { font-size: 11px; fill: #1677ff; font-weight: 600; }
+      .tabActive { fill: #e6f4ff; stroke: #91caff; stroke-width: 1; rx: 6; }
+      .tab { fill: #ffffff; stroke: #d9e0ea; stroke-width: 1; rx: 6; }
+      .thumb { fill: #eef2f7; stroke: #cbd5e1; stroke-width: 1; rx: 8; }
+      .promptBox { fill: #fff7e6; stroke: #ffd591; stroke-width: 1; rx: 6; }
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#94a3b8" />
+    </marker>
+    <marker id="arrowBlue" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#1677ff" />
+    </marker>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1600" height="1200"/>
+  <text class="text title" x="60" y="56">NovelSync 素材生成模块 UI 交互图</text>
+  <text class="text body" x="60" y="84">登录态共用，素材生成独立菜单；小说同步由设置开关控制，关闭时所有同步 worker 跳过执行。</text>
+
+  <!-- App shell -->
+  <rect class="frame" x="60" y="120" width="1480" height="960" rx="14"/>
+  <rect fill="#111827" x="60" y="120" width="220" height="960" rx="14"/>
+  <rect fill="#111827" x="250" y="120" width="30" height="960"/>
+  <text class="text h2" x="92" y="170" fill="#ffffff">NovelSync</text>
+  <text class="text small" x="92" y="194" fill="#9ca3af">已登录用户</text>
+
+  <rect fill="#1f2937" x="82" y="235" width="176" height="38" rx="6"/>
+  <text class="text body" x="112" y="259" fill="#e5e7eb">主页</text>
+  <text class="text body" x="112" y="312" fill="#d1d5db">百家号列表</text>
+  <text class="text body" x="112" y="360" fill="#d1d5db">小说列表</text>
+  <rect fill="#1677ff" x="82" y="388" width="176" height="42" rx="6"/>
+  <text class="text body" x="112" y="414" fill="#ffffff">素材生成</text>
+  <text class="text body" x="112" y="468" fill="#d1d5db">调试</text>
+  <text class="text body" x="112" y="516" fill="#d1d5db">设置</text>
+
+  <!-- Top settings dependency -->
+  <rect class="panel" x="320" y="140" width="520" height="210"/>
+  <text class="text h2" x="348" y="178">设置页：两个互不影响的目录</text>
+  <rect class="subtle" x="348" y="205" width="215" height="106"/>
+  <text class="text h3" x="368" y="233">小说同步</text>
+  <text class="text body" x="368" y="260">开关：启用小说自动同步</text>
+  <text class="text small" x="368" y="284">开启后必须设置小说监控目录</text>
+  <rect class="subtle" x="590" y="205" width="215" height="106"/>
+  <text class="text h3" x="610" y="233">素材生成</text>
+  <text class="text body" x="610" y="260">目录：素材输出目录</text>
+  <text class="text small" x="610" y="284">生成图片默认保存到这里</text>
+  <rect class="tag" x="348" y="322" width="190" height="22"/>
+  <text class="tagText" x="360" y="337">登录不自动启动小说同步</text>
+
+  <!-- Material page tabs -->
+  <rect class="panel" x="890" y="140" width="610" height="210"/>
+  <text class="text h2" x="918" y="178">素材生成页面</text>
+  <rect class="tabActive" x="918" y="206" width="86" height="34"/>
+  <text class="text body" x="946" y="228">制作</text>
+  <rect class="tab" x="1014" y="206" width="102" height="34"/>
+  <text class="text body" x="1039" y="228">任务列表</text>
+  <rect class="tab" x="1126" y="206" width="102" height="34"/>
+  <text class="text body" x="1151" y="228">图片列表</text>
+  <rect class="subtle" x="918" y="260" width="250" height="62"/>
+  <text class="text body" x="938" y="286">未设置素材输出目录</text>
+  <rect class="warning" x="938" y="298" width="92" height="24" rx="4"/>
+  <text class="buttonText" x="953" y="315">去设置目录</text>
+  <rect class="subtle" x="1190" y="260" width="260" height="62"/>
+  <text class="text body" x="1210" y="286">目录已设置</text>
+  <rect class="primary" x="1210" y="298" width="92" height="24" rx="4"/>
+  <text class="buttonText" x="1234" y="315">开始制作</text>
+
+  <path class="lineStrong" d="M840 248 C860 248 866 248 890 248"/>
+
+  <!-- Create tab detail -->
+  <rect class="panel" x="320" y="395" width="520" height="330"/>
+  <text class="text h2" x="348" y="433">制作 Tab</text>
+  <rect class="subtle" x="348" y="458" width="210" height="42"/>
+  <text class="text body" x="368" y="484">批量数量：1-100</text>
+  <rect class="subtle" x="578" y="458" width="210" height="42"/>
+  <text class="text body" x="598" y="484">提示词模型</text>
+  <rect class="subtle" x="348" y="516" width="210" height="42"/>
+  <text class="text body" x="368" y="542">生图模型</text>
+  <rect class="subtle" x="578" y="516" width="210" height="42"/>
+  <text class="text body" x="598" y="542">风格偏好/主题</text>
+  <rect class="promptBox" x="348" y="574" width="440" height="58"/>
+  <text class="text body" x="368" y="598">高级选项：负向提示词、生成参数</text>
+  <text class="text small" x="368" y="620">默认折叠，避免干扰主要制作流程</text>
+  <rect class="primary" x="348" y="650" width="130" height="38" rx="6"/>
+  <text class="buttonText" x="382" y="674">创建任务</text>
+  <rect class="subtle" x="500" y="650" width="288" height="38"/>
+  <rect class="success" x="500" y="650" width="150" height="38" rx="6"/>
+  <text class="text small" x="518" y="674" fill="#ffffff">进度 52/100</text>
+
+  <!-- Task runner -->
+  <rect class="panel" x="920" y="395" width="360" height="330"/>
+  <text class="text h2" x="948" y="433">后端任务队列</text>
+  <rect class="subtle" x="948" y="462" width="280" height="48"/>
+  <text class="text body" x="970" y="492">MaterialTaskRunner</text>
+  <rect class="subtle" x="948" y="530" width="280" height="48"/>
+  <text class="text body" x="970" y="560">生成提示词并写入 SQLite</text>
+  <rect class="subtle" x="948" y="598" width="280" height="48"/>
+  <text class="text body" x="970" y="628">调用生图模型并保存本地图片</text>
+  <rect class="tag" x="948" y="666" width="210" height="24"/>
+  <text class="tagText" x="966" y="683">单队列，避免并发失控</text>
+
+  <path class="lineStrong" d="M478 669 C650 669 720 560 920 560"/>
+
+  <!-- SQLite and local output -->
+  <rect class="panel" x="1320" y="395" width="180" height="330"/>
+  <text class="text h2" x="1348" y="433">持久化</text>
+  <rect class="subtle" x="1342" y="462" width="136" height="46"/>
+  <text class="text small" x="1362" y="489">material_tasks</text>
+  <rect class="subtle" x="1342" y="525" width="136" height="46"/>
+  <text class="text small" x="1355" y="552">material_prompts</text>
+  <rect class="subtle" x="1342" y="588" width="136" height="46"/>
+  <text class="text small" x="1360" y="615">material_images</text>
+  <rect class="subtle" x="1342" y="651" width="136" height="46"/>
+  <text class="text small" x="1362" y="678">本地输出目录</text>
+  <path class="line" d="M1280 560 C1300 560 1300 560 1320 560"/>
+
+  <!-- Task list -->
+  <rect class="panel" x="320" y="770" width="570" height="250"/>
+  <text class="text h2" x="348" y="808">任务列表 Tab</text>
+  <rect class="subtle" x="348" y="832" width="500" height="42"/>
+  <text class="text small" x="366" y="858">2026-06-24 15:30  |  100张  |  running  |  52成功 / 0失败</text>
+  <rect class="subtle" x="348" y="884" width="500" height="42"/>
+  <text class="text small" x="366" y="910">2026-06-24 14:12  |  20张  |  success  |  20成功 / 0失败</text>
+  <rect class="subtle" x="348" y="936" width="500" height="42"/>
+  <text class="text small" x="366" y="962">2026-06-24 13:05  |  50张  |  partial_failed  |  47成功 / 3失败</text>
+  <rect class="primary" x="710" y="990" width="138" height="28" rx="5"/>
+  <text class="buttonText" x="735" y="1009">查看任务详情</text>
+
+  <!-- Image list -->
+  <rect class="panel" x="940" y="770" width="560" height="250"/>
+  <text class="text h2" x="968" y="808">图片列表 Tab</text>
+  <rect class="thumb" x="968" y="835" width="108" height="126"/>
+  <text class="text small" x="986" y="982">查看提示词</text>
+  <rect class="thumb" x="1095" y="835" width="108" height="126"/>
+  <text class="text small" x="1113" y="982">查看提示词</text>
+  <rect class="thumb" x="1222" y="835" width="108" height="126"/>
+  <text class="text small" x="1240" y="982">查看提示词</text>
+  <rect class="thumb" x="1349" y="835" width="108" height="126"/>
+  <text class="text small" x="1367" y="982">查看提示词</text>
+
+  <!-- Drawer -->
+  <rect class="panel" x="1120" y="805" width="350" height="230"/>
+  <text class="text h3" x="1145" y="835">图片详情抽屉</text>
+  <rect class="thumb" x="1145" y="852" width="96" height="116"/>
+  <rect class="promptBox" x="1260" y="852" width="180" height="116"/>
+  <text class="text small" x="1275" y="878">完整中文提示词</text>
+  <text class="text small" x="1275" y="902">负向提示词</text>
+  <text class="text small" x="1275" y="926">模型 / 保存路径</text>
+  <text class="text small" x="1275" y="950">复制 / 打开文件</text>
+
+  <path class="lineStrong" d="M1222 960 C1180 980 1155 905 1120 905"/>
+  <path class="dash" d="M605 725 C605 748 605 750 605 770"/>
+  <path class="dash" d="M1100 725 C1100 748 1100 750 1100 770"/>
+
+  <!-- Novel sync disabled state -->
+  <rect class="panel" x="60" y="1098" width="690" height="70"/>
+  <text class="text h3" x="88" y="1128">小说同步未启用时</text>
+  <text class="text body" x="88" y="1154">主页、百家号列表、小说列表显示引导：开启小说自动同步并设置小说监控目录。素材生成不受影响。</text>
+
+  <rect class="panel" x="790" y="1098" width="710" height="70"/>
+  <text class="text h3" x="818" y="1128">隔离保证</text>
+  <text class="text body" x="818" y="1154">素材生成只写 material_* 表和素材输出目录；小说同步继续使用原 worker 和原数据表，通过 novel_sync_enabled 门禁保护。</text>
+</svg>

@@ -11,3 +11,313 @@ html, body, #root {
 * {
   box-sizing: border-box;
 }
+
+.material-image-card {
+  overflow: hidden;
+  cursor: pointer;
+  border: 1px solid #edf0f5;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(18, 38, 63, 0.06);
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
+}
+
+.material-images-content {
+  display: grid;
+  gap: 16px;
+  padding: 16px;
+}
+
+.material-download-progress {
+  width: 180px;
+  min-width: 150px;
+  display: grid;
+  grid-template-columns: auto minmax(70px, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.material-download-progress-text {
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.material-download-progress-bar {
+  margin: 0;
+}
+
+.material-download-progress-bar .ant-progress-outer {
+  margin-inline-end: 0;
+  padding-inline-end: 0;
+}
+
+.material-image-card:hover {
+  border-color: #b8d7ff;
+  box-shadow: 0 8px 20px rgba(18, 38, 63, 0.1);
+  transform: translateY(-1px);
+}
+
+.material-image-card-selected {
+  border-color: #1677ff;
+  box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.12), 0 8px 20px rgba(18, 38, 63, 0.1);
+}
+
+.material-image-card-failed {
+  border-color: #ffccc7;
+}
+
+.material-image-card .ant-card-cover {
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: #f5f7fb;
+}
+
+.material-image-card .ant-card-cover .ant-image {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.material-image-placeholder {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  overflow: hidden;
+  background:
+    linear-gradient(135deg, rgba(22, 119, 255, 0.08), rgba(64, 169, 255, 0.04)),
+    #f7faff;
+  color: #1677ff;
+}
+
+.material-image-placeholder::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 0%, rgba(255, 255, 255, 0.7) 46%, transparent 72%);
+  transform: translateX(-100%);
+  animation: material-placeholder-shimmer 1.8s ease-in-out infinite;
+}
+
+.material-image-placeholder-failed {
+  background:
+    linear-gradient(135deg, #fff1f0, #fffafa);
+  color: #cf1322;
+}
+
+.material-image-placeholder-failed::before {
+  display: none;
+}
+
+.material-image-placeholder-failed::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.62) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(255, 255, 255, 0.62) 1px, transparent 1px);
+  background-size: 28px 28px;
+  opacity: 0.45;
+}
+
+.material-image-placeholder-generating {
+  background:
+    linear-gradient(135deg, #eef5ff, #f8fbff);
+  color: #1677ff;
+}
+
+.material-image-placeholder-generating::before {
+  display: none;
+}
+
+.material-image-placeholder-generating::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.72) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(255, 255, 255, 0.72) 1px, transparent 1px);
+  background-size: 28px 28px;
+  opacity: 0.45;
+}
+
+.material-image-generating-mask {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 7px;
+  padding: 18px;
+  background: rgba(255, 255, 255, 0.42);
+  backdrop-filter: blur(1px);
+}
+
+.material-image-generating-icon {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 10px 24px rgba(22, 119, 255, 0.16);
+  color: #1677ff;
+  font-size: 22px;
+}
+
+.material-image-generating-title {
+  color: #1677ff;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.material-image-generating-subtitle {
+  color: #667085;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.material-image-failed-mask {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 7px;
+  padding: 18px;
+  background: rgba(255, 255, 255, 0.36);
+  backdrop-filter: blur(1px);
+}
+
+.material-image-failed-icon {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 10px 24px rgba(255, 77, 79, 0.16);
+  color: #cf1322;
+  font-size: 22px;
+}
+
+.material-image-failed-title {
+  color: #cf1322;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.material-image-failed-subtitle {
+  color: #667085;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.material-image-placeholder-icon {
+  z-index: 1;
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 8px 22px rgba(22, 119, 255, 0.12);
+  font-size: 22px;
+}
+
+.material-image-placeholder-failed .material-image-placeholder-icon {
+  box-shadow: 0 8px 22px rgba(255, 77, 79, 0.12);
+}
+
+.material-image-placeholder-title {
+  z-index: 1;
+  color: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.material-image-placeholder-subtitle {
+  z-index: 1;
+  color: #8c8c8c;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.material-image-card-body {
+  padding: 10px 12px 8px;
+}
+
+.material-image-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.material-image-card-status {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.material-image-card-size {
+  flex: 0 1 auto;
+  min-width: 0;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.material-image-card-time {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 12px;
+}
+
+.material-image-card-text {
+  min-height: 22px;
+  margin: 0;
+  color: #3f4652;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.material-image-card-pending .material-image-card-text {
+  color: #6b7280;
+}
+
+.material-image-card-text-error {
+  min-height: 40px;
+  color: #cf1322;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.material-image-card-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  padding: 8px 12px 12px;
+  border-top: 1px solid #f0f2f5;
+}
+
+.material-image-card-actions .ant-btn {
+  width: 100%;
+  border-radius: 6px;
+}
+
+@keyframes material-placeholder-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}

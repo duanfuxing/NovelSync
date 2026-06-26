@@ -1,13 +1,14 @@
 import React, { useEffect } from 'react';
-import { ConfigProvider, Layout, Typography, Menu, Avatar, Dropdown, Modal, Button, Spin } from 'antd';
+import { App as AntdApp, ConfigProvider, Layout, Typography, Menu, Avatar, Dropdown, Modal, Button, Spin } from 'antd';
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { AppstoreOutlined, DashboardOutlined, SettingOutlined, UserOutlined, LogoutOutlined, IdcardOutlined, FolderOpenOutlined, BookOutlined, BugOutlined } from '@ant-design/icons';
+import { DashboardOutlined, SettingOutlined, UserOutlined, LogoutOutlined, IdcardOutlined, FolderOpenOutlined, BookOutlined, BugOutlined, PictureOutlined } from '@ant-design/icons';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import BjhList from './pages/BjhList';
 import NovelList from './pages/NovelList';
 import DebugConsole from './pages/DebugConsole';
 import Settings from './pages/Settings';
+import MaterialGeneration from './pages/MaterialGeneration';
 import { useAppStore } from './store';
 
 const { Header, Content, Sider } = Layout;
@@ -19,6 +20,7 @@ const AppMenu = () => {
     { key: '/dashboard', icon: <DashboardOutlined />, label: <Link to="/dashboard">主页</Link> },
     { key: '/bjh-list', icon: <IdcardOutlined />, label: <Link to="/bjh-list">百家号列表</Link> },
     { key: '/novel-list', icon: <BookOutlined />, label: <Link to="/novel-list">小说列表</Link> },
+    { key: '/material-generation', icon: <PictureOutlined />, label: <Link to="/material-generation">素材生成</Link> },
     { key: '/debug', icon: <BugOutlined />, label: <Link to="/debug">调试</Link> },
     { key: '/settings', icon: <SettingOutlined />, label: <Link to="/settings">设置</Link> },
   ];
@@ -79,12 +81,12 @@ const UserDropdown: React.FC = () => {
 };
 
 const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { watchPath, watchPathChecked } = useAppStore();
+  const { watchPath, watchPathChecked, novelSyncEnabled, novelSyncReady } = useAppStore();
   const navigate = useNavigate();
   const location = useLocation();
 
   // watchPath 检查完毕、未设置，且用户不在设置页时才弹窗
-  const showModal = watchPathChecked && !watchPath && location.pathname !== '/settings';
+  const showModal = watchPathChecked && novelSyncEnabled && !novelSyncReady && location.pathname !== '/settings';
 
   return (
     <>
@@ -162,7 +164,10 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   if (sessionLoading) {
     return (
       <div style={{ height: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#f5f7fa' }}>
-        <Spin size="large" tip="正在恢复会话..." />
+        <div style={{ textAlign: 'center' }}>
+          <Spin size="large" />
+          <Text type="secondary" style={{ display: 'block', marginTop: 12 }}>正在恢复会话...</Text>
+        </div>
       </div>
     );
   }
@@ -200,19 +205,22 @@ const App: React.FC = () => {
         }
       }}
     >
-      <BrowserRouter>
-        <SessionRestorer>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/bjh-list" element={<ProtectedRoute><BjhList /></ProtectedRoute>} />
-            <Route path="/novel-list" element={<ProtectedRoute><NovelList /></ProtectedRoute>} />
-            <Route path="/debug" element={<ProtectedRoute><DebugConsole /></ProtectedRoute>} />
-            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          </Routes>
-        </SessionRestorer>
-      </BrowserRouter>
+      <AntdApp>
+        <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <SessionRestorer>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/bjh-list" element={<ProtectedRoute><BjhList /></ProtectedRoute>} />
+              <Route path="/novel-list" element={<ProtectedRoute><NovelList /></ProtectedRoute>} />
+              <Route path="/material-generation" element={<ProtectedRoute><MaterialGeneration /></ProtectedRoute>} />
+              <Route path="/debug" element={<ProtectedRoute><DebugConsole /></ProtectedRoute>} />
+              <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            </Routes>
+          </SessionRestorer>
+        </BrowserRouter>
+      </AntdApp>
     </ConfigProvider>
   );
 };

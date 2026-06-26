@@ -1,6 +1,6 @@
 import threading
 import abc
-from storage.crud import update_worker_status
+from storage.crud import get_active_novel_sync_state, update_worker_status
 
 
 class BaseWorker(abc.ABC):
@@ -12,6 +12,7 @@ class BaseWorker(abc.ABC):
 
     # 子类覆盖此属性设置轮询间隔（秒）
     interval: int = 60
+    requires_novel_sync: bool = False
 
     def __init__(self):
         self._wake_event = threading.Event()
@@ -40,16 +41,40 @@ class BaseWorker(abc.ABC):
         self._trigger_kwargs = kwargs
         self._wake_event.set()
 
+    def wake(self):
+        """唤醒线程重新检查运行条件"""
+        self._wake_event.set()
+
+    def _wait_until_allowed(self, worker_name: str) -> bool:
+        """小说同步关闭或未就绪时不进入定时倒计时。"""
+        if not self.requires_novel_sync:
+            return True
+
+        while self._running:
+            sync_state = get_active_novel_sync_state()
+            if sync_state["ready"]:
+                return True
+
+            update_worker_status(worker_name, "idle", sync_state["reason"])
+            self._wake_event.wait()
+            self._wake_event.clear()
+
+        return False
+
     def _run_loop(self):
         worker_name = self.__class__.__name__
 
         # 启动后先进入等待，不立即执行（手动触发或到达 interval 后才首次运行）
         # 使用 init_sleeping 避免覆盖 SQLite 中已有的 last_success_at
+        if not self._wait_until_allowed(worker_name):
+            return
         update_worker_status(worker_name, "init_sleeping")
         self._wake_event.wait(timeout=self.interval)
         self._wake_event.clear()
 
         while self._running:
+            if not self._wait_until_allowed(worker_name):
+                break
             try:
                 update_worker_status(worker_name, "running")
                 self.process()
@@ -65,4 +90,3 @@ class BaseWorker(abc.ABC):
             # 休眠等待下一轮（可被 trigger() 唤醒）
             self._wake_event.wait(timeout=self.interval)
             self._wake_event.clear()
-

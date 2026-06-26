@@ -35,6 +35,12 @@ class WorkerScheduler:
             return True
         return False
 
+    def wake_novel_sync_workers(self):
+        """小说同步设置变化后，唤醒相关 Worker 重新检查门禁。"""
+        for worker in self._workers.values():
+            if getattr(worker, "requires_novel_sync", False):
+                worker.wake()
+
     def get_worker_names(self) -> list[str]:
         return list(self._workers.keys())
 

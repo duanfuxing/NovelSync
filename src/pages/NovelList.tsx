@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { Card, Input, DatePicker, Button, Tag, Image, Typography, Pagination, Spin, Empty, Avatar, Tooltip, message, Select, Modal, Upload } from 'antd';
+import { App as AntdApp, Card, Input, DatePicker, Button, Tag, Image, Typography, Pagination, Spin, Empty, Avatar, Tooltip, Select, Modal, Upload } from 'antd';
 import {
   SearchOutlined,
   ReloadOutlined,
@@ -22,9 +22,12 @@ import {
   CloseCircleOutlined,
   AimOutlined,
   FileExcelOutlined,
+  SettingOutlined,
 } from '@ant-design/icons';
 import axios from 'axios';
 import dayjs from 'dayjs';
+import { useNavigate } from 'react-router-dom';
+import { useAppStore } from '../store';
 
 const { Text, Title } = Typography;
 const { RangePicker } = DatePicker;
@@ -150,12 +153,17 @@ const StatItem: React.FC<{ icon: React.ReactNode; value: number; label: string; 
 );
 
 /* 可复制文本 */
-const CopyableText: React.FC<{ label: string; value: string; color: string }> = ({ label, value, color }) => (
+const CopyableText: React.FC<{
+  label: string;
+  value: string;
+  color: string;
+  messageApi: ReturnType<typeof AntdApp.useApp>['message'];
+}> = ({ label, value, color, messageApi }) => (
   <Tooltip title="点击复制">
     <span
       style={{ fontSize: 11, color, cursor: 'pointer', userSelect: 'none' }}
       onClick={() => {
-        navigator.clipboard.writeText(value).then(() => message.success(`已复制 ${label}: ${value}`));
+        navigator.clipboard.writeText(value).then(() => messageApi.success(`已复制 ${label}: ${value}`));
       }}
     >
       {label}: {value}
@@ -164,6 +172,9 @@ const CopyableText: React.FC<{ label: string; value: string; color: string }> = 
 );
 
 const NovelList: React.FC = () => {
+  const navigate = useNavigate();
+  const { message } = AntdApp.useApp();
+  const { novelSyncReady, novelSyncReason } = useAppStore();
   const [data, setData] = useState<NovelItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [pagination, setPagination] = useState<PaginationInfo>({ currentPage: 1, pageSize: 10, total: 0 });
@@ -220,6 +231,7 @@ const NovelList: React.FC = () => {
   }, [keyword, appId, syncStatus, dateRange, sortField, sortOrder, nidFilter]);
 
   useEffect(() => {
+    if (!novelSyncReady) return;
     fetchData();
     // 拉取百家号列表作为下拉选项
     axios.get(`${LOCAL_API}/sync/bjh/cookies`).then(res => {
@@ -228,7 +240,25 @@ const NovelList: React.FC = () => {
         setBjhOptions(list);
       }
     }).catch(() => {});
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [novelSyncReady]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (!novelSyncReady) {
+    return (
+      <Card
+        style={{ borderRadius: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}
+        styles={{ body: { padding: 56, textAlign: 'center' } }}
+      >
+        <SettingOutlined style={{ fontSize: 46, color: '#1677ff', marginBottom: 16 }} />
+        <Title level={4} style={{ margin: '0 0 8px' }}>小说同步未启用</Title>
+        <Text type="secondary" style={{ display: 'block', marginBottom: 24 }}>
+          {novelSyncReason || '请先在设置中启用小说自动同步并配置小说监控目录。'}
+        </Text>
+        <Button type="primary" icon={<SettingOutlined />} onClick={() => navigate('/settings')}>
+          前往设置
+        </Button>
+      </Card>
+    );
+  }
 
   const handleSearch = () => fetchData(1, pagination.pageSize);
 
@@ -384,7 +414,7 @@ const NovelList: React.FC = () => {
       {/* 搜索栏 */}
       <Card
         style={{ marginBottom: 16, borderRadius: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}
-        bodyStyle={{ padding: '16px 24px' }}
+        styles={{ body: { padding: '16px 24px' } }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
           <Input
@@ -467,7 +497,7 @@ const NovelList: React.FC = () => {
       {/* 列表区域 */}
       <Card
         style={{ borderRadius: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}
-        bodyStyle={{ padding: 0 }}
+        styles={{ body: { padding: 0 } }}
         title={
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <Title level={5} style={{ margin: 0 }}>小说列表</Title>
@@ -563,9 +593,9 @@ const NovelList: React.FC = () => {
                     {item.publishTime ? item.publishTime.replace('T', ' ').substring(0, 19) : '—'}
                   </Text>
                   <div style={{ display: 'flex', gap: 12, marginTop: 'auto', alignItems: 'center' }}>
-                    <CopyableText label="ID" value={item.articleId} color="#1677ff" />
+                    <CopyableText label="ID" value={item.articleId} color="#1677ff" messageApi={message} />
                     {item.nid && (
-                      <CopyableText label="NID" value={item.nid} color="#722ed1" />
+                      <CopyableText label="NID" value={item.nid} color="#722ed1" messageApi={message} />
                     )}
                     {item.url && (
                       <a href={item.url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 12, whiteSpace: 'nowrap' }}>
@@ -621,7 +651,10 @@ const NovelList: React.FC = () => {
         </div>
 
         {matchLoading ? (
-          <div style={{ textAlign: 'center', padding: 50 }}><Spin tip="扫描本地文件中..." /></div>
+          <div style={{ textAlign: 'center', padding: 50 }}>
+            <Spin />
+            <Text type="secondary" style={{ display: 'block', marginTop: 12 }}>扫描本地文件中...</Text>
+          </div>
         ) : matchFiles.length === 0 ? (
           <Empty description="未找到相似文件，请确认本地监控目录是否正确" style={{ padding: '40px 0' }} />
         ) : (

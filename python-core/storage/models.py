@@ -9,6 +9,8 @@ class ClientConfig(SQLModel, table=True):
     token: str
     client_id: str
     watch_path: Optional[str] = None
+    novel_sync_enabled: int = Field(default=0)
+    material_output_dir: Optional[str] = None
     nick_name: Optional[str] = None
     avatar: Optional[str] = None
     phone: Optional[str] = None
@@ -95,4 +97,3 @@ class WorkerStatus(SQLModel, table=True):
     last_success_at: Optional[datetime] = None
     message: Optional[str] = None
     updated_at: Optional[datetime] = None
-

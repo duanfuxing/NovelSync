@@ -8,7 +8,7 @@ from storage.crud import (
     get_active_watch_path, upsert_book_sync_task,
     get_unsynced_articles, mark_article_synced,
     get_all_unsynced_orders, get_nid_novel_id_map, mark_orders_synced,
-    get_active_user_phone,
+    get_active_user_phone, get_active_novel_sync_state,
 )
 
 try:
@@ -66,9 +66,14 @@ class FileWatcherWorker(BaseWorker):
     同时查询关联的订单数据，补充 novel_id 后一并推送。
     """
     interval = config.WORKER_INTERVAL_FILE_WATCHER
+    requires_novel_sync = True
 
     def process(self):
         print("[FileWatcher] 开启本地文件扫描匹配任务...")
+        sync_state = get_active_novel_sync_state()
+        if not sync_state["ready"]:
+            print(f"[FileWatcher] 小说同步门禁未通过，跳过: {sync_state['reason']}")
+            return
 
         user_phone = get_active_user_phone()
         if not user_phone:

@@ -14,8 +14,9 @@ from pydantic import BaseModel
 from typing import Optional
 
 from storage.database import init_db
-from storage.crud import upsert_client_config, get_client_config, clear_client_config, upsert_bjh_cookies, get_all_bjh_cookies, get_watch_path, set_watch_path, get_all_worker_status, get_novel_list, get_dashboard_stats, upsert_user_profile, get_active_user_phone, get_active_watch_path
+from storage.crud import upsert_client_config, get_client_config, clear_client_config, upsert_bjh_cookies, get_all_bjh_cookies, get_watch_path, set_watch_path, set_novel_sync_enabled, get_novel_sync_state, get_material_output_dir, set_material_output_dir, get_active_novel_sync_state, get_all_worker_status, get_novel_list, get_dashboard_stats, upsert_user_profile, get_active_user_phone, get_active_watch_path
 from core.miaobi_client import MiaobiClient
+from api.material_generation import router as material_router, reset_interrupted_tasks_on_startup
 
 
 # ========== 日志捕获 ==========
@@ -75,9 +76,22 @@ class SetWatchPathItem(BaseModel):
     watch_path: str
 
 
+class SetNovelSyncItem(BaseModel):
+    """设置小说自动同步开关请求体"""
+    client_id: str
+    enabled: bool
+
+
+class SetMaterialOutputDirItem(BaseModel):
+    """设置素材输出目录请求体"""
+    client_id: str
+    material_output_dir: str
+
+
 # ========== FastAPI App ==========
 
 app = FastAPI(title="NovelSync Core API Base")
+app.include_router(material_router)
 
 app.add_middleware(
     CORSMiddleware,
@@ -100,6 +114,7 @@ def on_startup():
 
     # 1. 初始化数据库
     init_db()
+    reset_interrupted_tasks_on_startup()
 
     # 2. 重置旧的 Worker 状态
     reset_all_worker_status()
@@ -195,8 +210,12 @@ def proxy_login(item: LoginItem, background_tasks: BackgroundTasks):
             vip_level=vip_level,
         )
 
-        # 触发后台任务：抓取并分页合并用户下的百家号 Cookies 并入库
-        background_tasks.add_task(_sync_user_cookies_task, token, phone)
+        # 只有小说同步域启用且目录有效时，登录才触发 Cookie 同步。
+        sync_state = get_novel_sync_state(item.client_id)
+        if sync_state["ready"]:
+            background_tasks.add_task(_sync_user_cookies_task, token, phone)
+        else:
+            print(f"[Auth Proxy] 登录成功，小说同步未触发: {sync_state['reason']}")
 
         return {
             "code": 10000,
@@ -254,9 +273,12 @@ def restore_session(client_id: str, background_tasks: BackgroundTasks):
                         avatar=user_info.get("avatar"),
                         vip_level=user_info.get("vipLevel", 0),
                     )
-                # 恢复登录态时，静默触发一次同步
-                if phone:
+                # 恢复登录态时，只有小说同步域可运行才静默同步 Cookie。
+                sync_state = get_novel_sync_state(client_id)
+                if phone and sync_state["ready"]:
                     background_tasks.add_task(_sync_user_cookies_task, config_data["token"], phone)
+                elif phone:
+                    print(f"[Auth Proxy] 会话恢复成功，小说同步未触发: {sync_state['reason']}")
 
                 return {
                     "code": 10000,
@@ -303,6 +325,68 @@ def api_get_watch_path(client_id: str):
         return {"code": 500, "message": f"读取监控目录失败: {e}"}
 
 
+@app.get("/settings/novel-sync")
+def api_get_novel_sync(client_id: str):
+    """读取小说自动同步开关和监控目录"""
+    try:
+        state = get_novel_sync_state(client_id)
+        return {
+            "code": 10000,
+            "message": "success",
+            "data": {
+                "enabled": state["enabled"],
+                "watchPath": state["watchPath"],
+                "ready": state["ready"],
+                "reason": state["reason"],
+            },
+        }
+    except Exception as e:
+        return {"code": 500, "message": f"读取小说同步设置失败: {e}"}
+
+
+@app.post("/settings/novel-sync")
+def api_set_novel_sync(item: SetNovelSyncItem):
+    """保存小说自动同步开关"""
+    try:
+        set_novel_sync_enabled(item.client_id, item.enabled)
+        from workers.scheduler import scheduler
+        scheduler.wake_novel_sync_workers()
+        return {"code": 10000, "message": "保存成功", "data": get_novel_sync_state(item.client_id)}
+    except ValueError as e:
+        return {"code": 401, "message": str(e)}
+    except Exception as e:
+        return {"code": 500, "message": f"保存小说同步设置失败: {e}"}
+
+
+@app.get("/settings/material-output-dir")
+def api_get_material_output_dir(client_id: str):
+    """读取素材输出目录"""
+    try:
+        path = get_material_output_dir(client_id)
+        return {"code": 10000, "message": "success", "data": {"materialOutputDir": path}}
+    except Exception as e:
+        return {"code": 500, "message": f"读取素材输出目录失败: {e}"}
+
+
+@app.post("/settings/material-output-dir")
+def api_set_material_output_dir(item: SetMaterialOutputDirItem):
+    """保存素材输出目录到本地 SQLite"""
+    import os
+    try:
+        if not os.path.isdir(item.material_output_dir):
+            return {"code": 400, "message": f"路径不存在或不是目录: {item.material_output_dir}"}
+        set_material_output_dir(item.client_id, item.material_output_dir)
+        return {
+            "code": 10000,
+            "message": "保存成功",
+            "data": {"materialOutputDir": item.material_output_dir},
+        }
+    except ValueError as e:
+        return {"code": 401, "message": str(e)}
+    except Exception as e:
+        return {"code": 500, "message": f"保存素材输出目录失败: {e}"}
+
+
 @app.post("/settings/watch-path")
 def api_set_watch_path(item: SetWatchPathItem):
     """保存监控目录路径到本地 SQLite"""
@@ -311,7 +395,9 @@ def api_set_watch_path(item: SetWatchPathItem):
         if not os.path.isdir(item.watch_path):
             return {"code": 400, "message": f"路径不存在或不是目录: {item.watch_path}"}
         set_watch_path(item.client_id, item.watch_path)
-        return {"code": 10000, "message": "保存成功", "data": {"watchPath": item.watch_path}}
+        from workers.scheduler import scheduler
+        scheduler.wake_novel_sync_workers()
+        return {"code": 10000, "message": "保存成功", "data": get_novel_sync_state(item.client_id)}
     except ValueError as e:
         return {"code": 401, "message": str(e)}
     except Exception as e:
@@ -364,7 +450,58 @@ def api_pick_directory():
         return {"code": 500, "message": f"打开目录选择器失败: {e}"}
 
 
+@app.get("/settings/pick-material-output-directory")
+def api_pick_material_output_directory():
+    """弹出系统原生文件夹选取器，返回素材输出目录路径"""
+    import subprocess
+    import platform
+    try:
+        system = platform.system()
+        if system == "Darwin":
+            script = 'tell application "Finder" to set thePath to POSIX path of (choose folder with prompt "选择素材输出目录")'
+            result = subprocess.run(
+                ["osascript", "-e", script],
+                capture_output=True, text=True, timeout=120
+            )
+            if result.returncode != 0:
+                return {"code": 400, "message": "用户取消了选择"}
+            path = result.stdout.strip()
+        elif system == "Windows":
+            ps_cmd = "[System.Reflection.Assembly]::LoadWithPartialName('System.Windows.Forms') | Out-Null; $f = New-Object System.Windows.Forms.FolderBrowserDialog; $f.Description='选择素材输出目录'; if($f.ShowDialog() -eq 'OK'){$f.SelectedPath}"
+            result = subprocess.run(
+                ["powershell", "-Command", ps_cmd],
+                capture_output=True, text=True, timeout=120
+            )
+            path = result.stdout.strip()
+            if not path:
+                return {"code": 400, "message": "用户取消了选择"}
+        else:
+            result = subprocess.run(
+                ["zenity", "--file-selection", "--directory", "--title=选择素材输出目录"],
+                capture_output=True, text=True, timeout=120
+            )
+            if result.returncode != 0:
+                return {"code": 400, "message": "用户取消了选择"}
+            path = result.stdout.strip()
+
+        if path:
+            return {"code": 10000, "message": "success", "data": {"path": path}}
+        return {"code": 400, "message": "用户取消了选择"}
+    except subprocess.TimeoutExpired:
+        return {"code": 400, "message": "选择超时，请重试"}
+    except Exception as e:
+        return {"code": 500, "message": f"打开素材目录选择器失败: {e}"}
+
+
 # ========== 业务代理路由 ==========
+
+def _require_novel_sync_ready():
+    """小说同步域后端门禁：关闭或未就绪时拒绝相关操作。"""
+    state = get_active_novel_sync_state()
+    if not state["ready"]:
+        return {"code": 400, "message": f"小说同步未运行：{state['reason']}"}
+    return None
+
 
 @app.get("/sync/bjh/cookies")
 def get_and_sync_cookies():
@@ -607,6 +744,10 @@ def match_local_files(title: str, threshold: float = 0.4):
     from difflib import SequenceMatcher
 
     try:
+        blocked = _require_novel_sync_ready()
+        if blocked:
+            return blocked
+
         watch_path = get_active_watch_path()
         if not watch_path or not os.path.isdir(watch_path):
             return {"code": 400, "message": "本地监控目录未配置或不存在"}
@@ -646,6 +787,10 @@ def reveal_file_in_finder(file_path: str):
     import platform
 
     try:
+        blocked = _require_novel_sync_ready()
+        if blocked:
+            return blocked
+
         if not file_path or not os.path.exists(file_path):
             return {"code": 400, "message": f"文件不存在: {file_path}"}
 
@@ -675,6 +820,10 @@ def rename_local_file(item: RenameFileItem):
     import os
 
     try:
+        blocked = _require_novel_sync_ready()
+        if blocked:
+            return blocked
+
         if not item.filePath or not os.path.exists(item.filePath):
             return {"code": 400, "message": f"文件不存在: {item.filePath}"}
 
@@ -718,9 +867,15 @@ def get_workers_status():
         "FileWatcherWorker": config.WORKER_INTERVAL_FILE_WATCHER,
     }
     try:
+        novel_state = get_active_novel_sync_state()
         statuses = get_all_worker_status()
         for s in statuses:
-            s["intervalSeconds"] = interval_map.get(s["workerName"], 0)
+            if s["workerName"] in interval_map and not novel_state["ready"]:
+                s["intervalSeconds"] = 0
+                s["status"] = "idle"
+                s["message"] = novel_state["reason"]
+            else:
+                s["intervalSeconds"] = interval_map.get(s["workerName"], 0)
         return {"code": 10000, "message": "success", "data": statuses}
     except Exception as e:
         return {"code": 500, "message": f"查询 Worker 状态失败: {e}"}
@@ -730,6 +885,10 @@ def get_workers_status():
 def trigger_worker(worker_name: str, force_full: bool = False):
     """手动触发指定 Worker 立即执行一次（唤醒已有线程）"""
     from workers.scheduler import scheduler
+    if worker_name in {"AccountSyncWorker", "ArticleSyncWorker", "OrderSyncWorker", "FileWatcherWorker"}:
+        state = get_active_novel_sync_state()
+        if not state["ready"]:
+            return {"code": 400, "message": f"小说同步未运行：{state['reason']}"}
     kwargs = {}
     if worker_name in ("ArticleSyncWorker", "OrderSyncWorker") and force_full:
         kwargs["force_full"] = True

@@ -1,7 +1,7 @@
 import config
 from workers.base_worker import BaseWorker
 from core.miaobi_client import MiaobiClient
-from storage.crud import upsert_bjh_cookies, get_active_user_phone
+from storage.crud import upsert_bjh_cookies, get_active_user_phone, get_active_novel_sync_state
 
 
 class AccountSyncWorker(BaseWorker):
@@ -10,9 +10,14 @@ class AccountSyncWorker(BaseWorker):
     1. 定时从妙笔云端拉取最新的百家号 Cookie 列表，写入本地 SQLite
     """
     interval = config.WORKER_INTERVAL_ACCOUNT_SYNC
+    requires_novel_sync = True
 
     def process(self):
         print("[AccountSync] ========== 开始同步百家号 Cookie ==========")
+        sync_state = get_active_novel_sync_state()
+        if not sync_state["ready"]:
+            print(f"[AccountSync] 小说同步门禁未通过，跳过: {sync_state['reason']}")
+            return
 
         user_phone = get_active_user_phone()
         if not user_phone:

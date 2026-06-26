@@ -123,6 +123,8 @@ def init_db():
         conn.exec_driver_sql("PRAGMA journal_mode=WAL;")
         conn.exec_driver_sql("PRAGMA synchronous=NORMAL;")
         conn.exec_driver_sql("PRAGMA busy_timeout=5000;")
+        for table_name in ("material_images", "material_prompts", "material_tasks"):
+            conn.exec_driver_sql(f'DROP TABLE IF EXISTS "{table_name}";')
 
     # 1. 先创建不存在的新表
     SQLModel.metadata.create_all(engine)
