@@ -111,10 +111,60 @@ def _auto_migrate():
 
             with engine.connect() as conn:
                 conn.execute(text(ddl))
+                if table_name == "client_config" and column.name == "novel_sync_enabled":
+                    conn.execute(text("""
+                        UPDATE client_config
+                        SET novel_sync_enabled = 1
+                        WHERE watch_path IS NOT NULL
+                          AND TRIM(watch_path) != ''
+                    """))
                 conn.commit()
             print(f"[DB Migration] 表 {table_name} 新增字段: {column.name} ({col_type})")
 
     print("[DB Migration] Schema 检查完成")
+
+
+def _run_data_migrations():
+    """执行一次性数据迁移，避免在后续启动时覆盖用户手动设置。"""
+    from sqlalchemy import inspect, text
+
+    inspector = inspect(engine)
+    if "client_config" not in inspector.get_table_names():
+        return
+
+    migration_name = "enable_novel_sync_for_legacy_watch_path"
+    client_config_columns = {col["name"] for col in inspector.get_columns("client_config")}
+
+    with engine.connect() as conn:
+        conn.execute(text("""
+            CREATE TABLE IF NOT EXISTS app_data_migrations (
+                name TEXT PRIMARY KEY,
+                applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """))
+
+        applied = conn.execute(
+            text("SELECT 1 FROM app_data_migrations WHERE name = :name"),
+            {"name": migration_name},
+        ).first()
+        if applied:
+            conn.commit()
+            return
+
+        if {"watch_path", "novel_sync_enabled"}.issubset(client_config_columns):
+            conn.execute(text("""
+                UPDATE client_config
+                SET novel_sync_enabled = 1
+                WHERE watch_path IS NOT NULL
+                  AND TRIM(watch_path) != ''
+                  AND COALESCE(novel_sync_enabled, 0) = 0
+            """))
+
+        conn.execute(
+            text("INSERT INTO app_data_migrations (name) VALUES (:name)"),
+            {"name": migration_name},
+        )
+        conn.commit()
 
 
 def init_db():
@@ -134,3 +184,6 @@ def init_db():
 
     # 3. 再次 create_all，重建被 DROP 的表
     SQLModel.metadata.create_all(engine)
+
+    # 4. 执行只应发生一次的数据回填
+    _run_data_migrations()
