@@ -4,6 +4,7 @@ NovelSync 启动入口
 """
 import sys
 import os
+import atexit
 import threading
 import time
 
@@ -14,13 +15,46 @@ from utils.log_setup import init_logging  # noqa: E402
 init_logging()
 
 
+def _get_parent_pid() -> int:
+    raw_pid = os.environ.get("NOVELSYNC_PARENT_PID", "").strip()
+    try:
+        pid = int(raw_pid)
+        if pid > 0:
+            return pid
+    except (TypeError, ValueError):
+        pass
+    return os.getppid()
+
+
+def _write_sidecar_pid_file(pid_file: str | None):
+    if not pid_file:
+        return
+    directory = os.path.dirname(pid_file)
+    if directory:
+        os.makedirs(directory, exist_ok=True)
+    with open(pid_file, "w", encoding="utf-8") as f:
+        f.write(str(os.getpid()))
+
+
+def _remove_sidecar_pid_file(pid_file: str | None):
+    if not pid_file or not os.path.exists(pid_file):
+        return
+    try:
+        with open(pid_file, "r", encoding="utf-8") as f:
+            recorded_pid = f.read().strip()
+        if recorded_pid == str(os.getpid()):
+            os.remove(pid_file)
+    except OSError:
+        pass
+
+
 def _watch_parent_process():
     """
     守护线程：监听父进程（Tauri）是否存活。
     父进程死亡后 Python sidecar 自行退出，防止进程残留。
     兼容 macOS / Windows / Linux。
     """
-    ppid = os.getppid()
+    ppid = _get_parent_pid()
     print(f"[Main] 父进程监控已启动 (parent PID={ppid})")
 
     if sys.platform == "win32":
@@ -66,6 +100,9 @@ if __name__ == "__main__":
 
     # 启动父进程存活监控（仅打包环境启用，开发环境不需要）
     if getattr(sys, 'frozen', False):
+        _pid_file = os.environ.get("NOVELSYNC_SIDECAR_PID_FILE", "")
+        _write_sidecar_pid_file(_pid_file)
+        atexit.register(_remove_sidecar_pid_file, _pid_file)
         watcher = threading.Thread(target=_watch_parent_process, daemon=True)
         watcher.start()
 

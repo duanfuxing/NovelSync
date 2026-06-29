@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import axios from 'axios';
+import { shouldClearStoredSession, waitForLocalApi } from './sessionRestore';
 
 const LOCAL_API = import.meta.env.VITE_LOCAL_API_BASE_URL;
 
@@ -72,9 +73,21 @@ export const useAppStore = create<AppState>((set, get) => ({
       set({ sessionLoading: false });
       return false;
     }
+
+    const localApiReady = await waitForLocalApi(
+      () => axios.get(`${LOCAL_API}/health`, { timeout: 1000 }),
+      { timeoutMs: 15000, intervalMs: 300 },
+    );
+    if (!localApiReady) {
+      console.warn('[Store] Local API health check timed out; keeping local token for retry');
+      set({ sessionLoading: false });
+      return false;
+    }
+
     try {
       const res = await axios.get(`${LOCAL_API}/auth/session`, {
         params: { client_id: clientId },
+        timeout: 10000,
       });
       if (res.data.code === 10000) {
         const d = res.data.data;
@@ -95,13 +108,21 @@ export const useAppStore = create<AppState>((set, get) => ({
         get().checkWatchPath();
         return true;
       }
+
+      if (shouldClearStoredSession(res.data)) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('uid');
+        set({ token: null, uid: null, userProfile: null, sessionLoading: false, watchPathChecked: true, novelSyncEnabled: false, novelSyncReady: false, novelSyncReason: '小说自动同步未启用' });
+        return false;
+      }
+
+      console.warn('[Store] Session restore skipped without clearing token', res.data);
     } catch (e) {
       console.error('[Store] Session restore failed', e);
     }
-    // Token 无效，清除本地状态
-    localStorage.removeItem('token');
-    localStorage.removeItem('uid');
-    set({ token: null, uid: null, userProfile: null, sessionLoading: false, watchPathChecked: true, novelSyncEnabled: false, novelSyncReady: false, novelSyncReason: '小说自动同步未启用' });
+
+    // 网络错误、后端未就绪或临时服务异常不清除本地 token，避免误判掉线。
+    set({ sessionLoading: false });
     return false;
   },
 

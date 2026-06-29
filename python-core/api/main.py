@@ -3,6 +3,7 @@ import os
 import io
 import threading
 from collections import deque
+from dataclasses import dataclass
 from datetime import datetime
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -68,6 +69,14 @@ class LoginItem(BaseModel):
     verifyCode: str     # 验证码
     channel: str = "sms"
     client_id: str      # 本机设备标识（仅用于本地落盘，不转发给妙笔）
+
+
+@dataclass
+class AuthCheckResult:
+    status: str
+    data: dict | None = None
+    message: str = ""
+    code: int | None = None
 
 
 class SetWatchPathItem(BaseModel):
@@ -261,8 +270,9 @@ def restore_session(client_id: str, background_tasks: BackgroundTasks):
         config_data = get_client_config(client_id)
         if config_data:
             # 验证 Token 是否仍然有效：调一次用户信息接口
-            user_info = _fetch_user_info(config_data["token"])
-            if user_info:
+            auth_check = _check_user_info(config_data["token"])
+            if auth_check.status == "valid":
+                user_info = auth_check.data or {}
                 phone = user_info.get("phone") or config_data.get("phone", "")
                 # 更新 UserProfile
                 if phone:
@@ -292,10 +302,16 @@ def restore_session(client_id: str, background_tasks: BackgroundTasks):
                         "vipLevel": user_info.get("vipLevel", config_data.get("vipLevel", 0)),
                     },
                 }
-            else:
+            elif auth_check.status == "expired":
                 # Token 已失效，清除本地登录态
                 clear_client_config(client_id)
-                return {"code": 401, "message": "本地会话已过期，请重新登录"}
+                return {"code": 401, "message": auth_check.message or "本地会话已过期，请重新登录"}
+            else:
+                return {
+                    "code": 503,
+                    "message": "会话校验暂时不可用，请稍后重试",
+                    "data": {"reason": auth_check.message},
+                }
 
         return {"code": 401, "message": "无本地登录态"}
     except Exception as e:
@@ -913,17 +929,31 @@ async def clear_debug_logs():
 
 # ========== 内部工具函数 ==========
 
-def _fetch_user_info(token: str) -> dict | None:
-    """调用妙笔 /user/info 接口获取用户信息"""
+def _check_user_info(token: str) -> AuthCheckResult:
+    """调用妙笔 /user/info 接口校验 token，并区分过期与临时不可用。"""
     try:
         client = MiaobiClient(token)
         res_data = client.get_user_info()
         if res_data.get("code") == 10000:
-            return res_data.get("data", {})
-        return None
+            return AuthCheckResult(status="valid", data=res_data.get("data", {}))
+
+        code = res_data.get("code")
+        message = res_data.get("message", "鉴权失败")
+        if code in (401, 90001, 90002, 90003, 90004) or "鉴权" in message or "过期" in message:
+            return AuthCheckResult(status="expired", message=message, code=code)
+
+        return AuthCheckResult(status="unavailable", message=message, code=code)
     except Exception as e:
-        print(f"[Auth Proxy] _fetch_user_info 异常: {e}")
-        return None
+        print(f"[Auth Proxy] _check_user_info 异常: {e}")
+        return AuthCheckResult(status="unavailable", message=str(e))
+
+
+def _fetch_user_info(token: str) -> dict | None:
+    """调用妙笔 /user/info 接口获取用户信息"""
+    auth_check = _check_user_info(token)
+    if auth_check.status == "valid":
+        return auth_check.data or {}
+    return None
 
 def _sync_user_cookies_task(token: str, user_phone: str = ""):
     """后台任务：分页拉取所有用户的 Cookie 记录并写入缓存"""

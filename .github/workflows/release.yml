@@ -39,6 +39,28 @@ jobs:
           node-version: 20
           cache: npm
 
+      - name: Sync release version from tag
+        run: node scripts/sync-release-version.mjs --tag "${{ github.ref_name }}"
+
+      - name: Verify release version from tag
+        run: node scripts/sync-release-version.mjs --tag "${{ github.ref_name }}" --check
+
+      - name: Validate updater signing secrets
+        shell: bash
+        env:
+          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+        run: |
+          if [[ -z "$TAURI_PRIVATE_KEY" ]]; then
+            echo "Missing TAURI_PRIVATE_KEY secret; updater artifacts cannot be signed."
+            exit 1
+          fi
+
+          if [[ -z "$TAURI_KEY_PASSWORD" ]]; then
+            echo "Missing TAURI_KEY_PASSWORD secret; updater artifacts cannot be signed."
+            exit 1
+          fi
+
       - name: Setup Python
         uses: actions/setup-python@v6
         with:
@@ -167,3 +189,19 @@ jobs:
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.tauri_args }}
+
+  verify-update-metadata:
+    needs: build-tauri
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+
+      - name: Verify published latest.json
+        run: node scripts/verify-latest-json.mjs --url "https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/latest.json" --tag "${{ github.ref_name }}"
