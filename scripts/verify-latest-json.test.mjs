@@ -25,11 +25,29 @@ const manifest = {
   },
 };
 
+const proxiedManifest = {
+  ...manifest,
+  platforms: Object.fromEntries(
+    Object.entries(manifest.platforms).map(([platform, entry]) => [
+      platform,
+      {
+        ...entry,
+        url: `https://gh-proxy.com/https://github.com/duanfuxing/NovelSync/releases/download/v0.3.10/${platform}.zip`,
+      },
+    ]),
+  ),
+};
+
 assert.equal(parseRequiredVersion('v0.3.10'), '0.3.10');
 assert.equal(parseRequiredVersion('0.3.10'), '0.3.10');
 assert.throws(() => parseRequiredVersion('release-0.3.10'), /expected vX\.Y\.Z/);
 
 assertLatestJson({ manifest, version: '0.3.10' });
+assertLatestJson({
+  manifest: proxiedManifest,
+  version: '0.3.10',
+  requiredUrlPrefix: 'https://gh-proxy.com/https://github.com/',
+});
 
 assert.throws(
   () => assertLatestJson({
@@ -71,4 +89,13 @@ assert.throws(
     version: '0.3.10',
   }),
   /windows-x86_64 platform is missing/,
+);
+
+assert.throws(
+  () => assertLatestJson({
+    manifest,
+    version: '0.3.10',
+    requiredUrlPrefix: 'https://gh-proxy.com/https://github.com/',
+  }),
+  /darwin-x86_64 url must start with https:\/\/gh-proxy\.com\/https:\/\/github\.com\//,
 );

@@ -98,3 +98,46 @@ assert.deepEqual(await mod.checkForUpdate({ deps: failingDeps }), {
   status: 'error',
   message: '检查更新失败：network timeout',
 });
+
+assert.deepEqual(
+  mod.getStartupUpdateDialog({
+    status: 'available',
+    message: '发现新版本 0.4.4',
+    manifest: {
+      version: '0.4.4',
+      body: '修复自动更新下载地址',
+    },
+  }),
+  {
+    kind: 'confirm',
+    title: '发现新版本 0.4.4',
+    content: '修复自动更新下载地址',
+    installable: true,
+  },
+);
+
+assert.deepEqual(
+  mod.getStartupUpdateDialog({
+    status: 'up-to-date',
+    message: '当前已是最新版本',
+  }),
+  {
+    kind: 'info',
+    title: '当前已是最新版本',
+    content: '当前已是最新版本',
+    installable: false,
+  },
+);
+
+assert.deepEqual(
+  mod.getStartupUpdateDialog({
+    status: 'error',
+    message: '检查更新失败：Could not fetch a valid release JSON from the remote',
+  }),
+  {
+    kind: 'warning',
+    title: '检查更新失败',
+    content: '检查更新失败：Could not fetch a valid release JSON from the remote',
+    installable: false,
+  },
+);

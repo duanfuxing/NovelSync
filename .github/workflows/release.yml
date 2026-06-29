@@ -203,5 +203,30 @@ jobs:
         with:
           node-version: 20
 
-      - name: Verify published latest.json
-        run: node scripts/verify-latest-json.mjs --url "https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/latest.json" --tag "${{ github.ref_name }}"
+      - name: Download published latest.json
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release download "${{ github.ref_name }}" --pattern latest.json --clobber
+
+      - name: Verify generated latest.json
+        run: node scripts/verify-latest-json.mjs --file latest.json --tag "${{ github.ref_name }}"
+
+      - name: Prepare ghfast updater manifest
+        run: cp latest.json latest-ghfast.json
+
+      - name: Rewrite latest.json asset URLs through gh-proxy
+        run: node scripts/rewrite-latest-json-urls.mjs --input latest.json --output latest.json --proxy https://gh-proxy.com/
+
+      - name: Rewrite latest-ghfast.json asset URLs through ghfast
+        run: node scripts/rewrite-latest-json-urls.mjs --input latest-ghfast.json --output latest-ghfast.json --proxy https://ghfast.top/
+
+      - name: Verify gh-proxy latest.json
+        run: node scripts/verify-latest-json.mjs --file latest.json --tag "${{ github.ref_name }}" --require-url-prefix https://gh-proxy.com/https://github.com/
+
+      - name: Verify ghfast latest-ghfast.json
+        run: node scripts/verify-latest-json.mjs --file latest-ghfast.json --tag "${{ github.ref_name }}" --require-url-prefix https://ghfast.top/https://github.com/
+
+      - name: Upload proxied latest.json files
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${{ github.ref_name }}" latest.json latest-ghfast.json --clobber

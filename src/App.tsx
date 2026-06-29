@@ -10,7 +10,7 @@ import DebugConsole from './pages/DebugConsole';
 import Settings from './pages/Settings';
 import MaterialGeneration from './pages/MaterialGeneration';
 import { useAppStore } from './store';
-import { checkForUpdate, installAvailableUpdate } from './utils/updater';
+import { checkForUpdate, getStartupUpdateDialog, installAvailableUpdate } from './utils/updater';
 
 const { Header, Content, Sider } = Layout;
 const { Title, Text } = Typography;
@@ -189,24 +189,42 @@ const StartupUpdateChecker: React.FC = () => {
     const checkStartupUpdate = async () => {
       const result = await checkForUpdate();
 
-      if (result.status === 'unsupported' || result.status === 'up-to-date') {
+      if (result.status === 'unsupported') {
         return;
       }
 
-      if (result.status === 'error') {
-        message.warning(result.message);
+      const dialog = getStartupUpdateDialog(result);
+      const content = (
+        <div>
+          <Text type="secondary">
+            {dialog.content}
+          </Text>
+        </div>
+      );
+
+      if (dialog.kind === 'info') {
+        modal.info({
+          title: dialog.title,
+          content,
+          okText: '知道了',
+          centered: true,
+        });
+        return;
+      }
+
+      if (dialog.kind === 'warning') {
+        modal.warning({
+          title: dialog.title,
+          content,
+          okText: '知道了',
+          centered: true,
+        });
         return;
       }
 
       modal.confirm({
-        title: `发现新版本 ${result.manifest?.version || ''}`.trim(),
-        content: (
-          <div>
-            <Text type="secondary">
-              {result.manifest?.body || '检测到可用更新，建议立即安装。'}
-            </Text>
-          </div>
-        ),
+        title: dialog.title,
+        content,
         okText: '立即更新',
         cancelText: '稍后',
         centered: true,

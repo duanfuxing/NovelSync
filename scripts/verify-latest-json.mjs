@@ -28,6 +28,7 @@ export function parseRequiredVersion(tagOrVersion) {
 export function assertLatestJson({
   manifest,
   version,
+  requiredUrlPrefix = null,
   requiredPlatforms = DEFAULT_REQUIRED_PLATFORMS,
 }) {
   const failures = [];
@@ -45,6 +46,8 @@ export function assertLatestJson({
 
     if (!entry.url) {
       failures.push(`${platform} url is missing`);
+    } else if (requiredUrlPrefix && !entry.url.startsWith(requiredUrlPrefix)) {
+      failures.push(`${platform} url must start with ${requiredUrlPrefix}`);
     }
 
     if (!entry.signature) {
@@ -88,6 +91,7 @@ function parseArgs(argv) {
   const args = {
     file: null,
     intervalMs: 5000,
+    requiredUrlPrefix: null,
     retries: 12,
     tag: process.env.GITHUB_REF_NAME ?? process.env.GITHUB_REF?.replace(/^refs\/tags\//, ''),
     url: null,
@@ -103,6 +107,9 @@ function parseArgs(argv) {
       index += 1;
     } else if (arg === '--retries') {
       args.retries = Number(argv[index + 1]);
+      index += 1;
+    } else if (arg === '--require-url-prefix') {
+      args.requiredUrlPrefix = argv[index + 1];
       index += 1;
     } else if (arg === '--tag') {
       args.tag = argv[index + 1];
@@ -150,7 +157,7 @@ async function main() {
   const args = parseArgs(process.argv.slice(2));
   const version = parseRequiredVersion(args.tag);
   const manifest = await readManifest(args);
-  assertLatestJson({ manifest, version });
+  assertLatestJson({ manifest, version, requiredUrlPrefix: args.requiredUrlPrefix });
   console.log(`Verified latest.json for version ${version}`);
 }
 

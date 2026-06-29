@@ -22,6 +22,13 @@ export type UpdateInstallResult =
   | { status: 'unsupported'; message: string }
   | { status: 'error'; message: string };
 
+export type StartupUpdateDialog = {
+  kind: 'confirm' | 'info' | 'warning';
+  title: string;
+  content: string;
+  installable: boolean;
+};
+
 export type UpdaterDependencies = {
   isTauriRuntime: () => boolean;
   getVersion: () => Promise<string>;
@@ -102,6 +109,33 @@ export async function checkForUpdate({
       message: `检查更新失败：${errorMessage(error)}`,
     };
   }
+}
+
+export function getStartupUpdateDialog(result: UpdateCheckResult): StartupUpdateDialog {
+  if (result.status === 'available') {
+    return {
+      kind: 'confirm',
+      title: `发现新版本 ${result.manifest?.version || ''}`.trim(),
+      content: result.manifest?.body || '检测到可用更新，建议立即安装。',
+      installable: true,
+    };
+  }
+
+  if (result.status === 'error') {
+    return {
+      kind: 'warning',
+      title: '检查更新失败',
+      content: result.message,
+      installable: false,
+    };
+  }
+
+  return {
+    kind: 'info',
+    title: result.message,
+    content: result.message,
+    installable: false,
+  };
 }
 
 export async function installAvailableUpdate(
