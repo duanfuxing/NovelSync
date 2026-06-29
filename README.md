@@ -136,7 +136,9 @@ NovelSync/
 GitHub Actions 由 `v*` 格式的 tag 推送触发，会自动构建 macOS (ARM/Intel) + Windows 安装包并上传到 Releases。
 Tag 是应用版本号的唯一来源：推送 `v0.3.10` 时，CI 会在打包前自动写入 `0.3.10` 到 Tauri、Cargo、npm 和 `.env` 版本字段，并校验生成的 `latest.json` 是否包含 macOS Intel、macOS ARM、Windows 的签名更新包。
 
-已安装客户端启动时会读取 GitHub Release 的 `latest.json`。只要远端版本号大于本地版本，Tauri updater 就会弹窗提示更新。
+已安装客户端启动时会读取 GitHub Release 的 `latest.json`。只要远端版本号大于本地版本，Tauri updater 就会弹窗提示更新；如果当前已经是最新版本，启动时不会弹窗打扰用户，可在「设置 → 软件更新」里手动检查并看到“当前已是最新版本”或失败原因。
+
+验证自动更新时，要先安装旧版本，再发布一个更高版本。例如先安装 `v0.4.2`，再发布 `v0.4.3`，重新打开 `v0.4.2` 客户端后才会触发更新弹窗。
 
 ```bash
 # 1. 提交代码
@@ -144,7 +146,7 @@ git add -A
 git commit -m "fix: 修复全量同步参数竞态丢失"
 
 # 2. 打 tag（版本号必须递增）
-git tag v0.3.10
+git tag v0.4.3
 
 # 3. 推送代码 + tag，触发 GitHub Actions 构建
 git push origin main --tags
@@ -154,6 +156,6 @@ git push origin main --tags
 
 > 💡 如果只想重新触发某个已有 tag 的构建（不改代码），可以删除远端 tag 后重推：
 > ```bash
-> git push origin :refs/tags/v0.3.10   # 删除远端 tag
-> git push origin v0.3.10              # 重新推送
+> git push origin :refs/tags/v0.4.3   # 删除远端 tag
+> git push origin v0.4.3              # 重新推送
 > ```
