@@ -3,13 +3,23 @@ import { Alert, App as AntdApp, Button, Card, Input, Space, Switch, Tag, Typogra
 import {
   BookOutlined,
   CheckCircleOutlined,
+  CloudDownloadOutlined,
+  DownloadOutlined,
   FolderOpenOutlined,
   PictureOutlined,
+  ReloadOutlined,
   SettingOutlined,
   WarningOutlined,
 } from '@ant-design/icons';
 import axios from 'axios';
 import { useAppStore } from '../store';
+import {
+  checkForUpdate,
+  getCurrentVersion,
+  installAvailableUpdate,
+  type UpdateCheckResult,
+  type VersionInfo,
+} from '../utils/updater';
 
 const { Title, Text, Paragraph } = Typography;
 const LOCAL_API = import.meta.env.VITE_LOCAL_API_BASE_URL;
@@ -26,6 +36,10 @@ const Settings: React.FC = () => {
   const [savingNovelSync, setSavingNovelSync] = useState(false);
   const [savingWatchPath, setSavingWatchPath] = useState(false);
   const [savingMaterialDir, setSavingMaterialDir] = useState(false);
+  const [versionInfo, setVersionInfo] = useState<VersionInfo>({ isTauri: false, version: '读取中' });
+  const [checkingUpdate, setCheckingUpdate] = useState(false);
+  const [installingUpdate, setInstallingUpdate] = useState(false);
+  const [updateResult, setUpdateResult] = useState<UpdateCheckResult | null>(null);
 
   useEffect(() => {
     const loadSettings = async () => {
@@ -81,6 +95,10 @@ const Settings: React.FC = () => {
 
     loadSettings();
   }, [clientId]);
+
+  useEffect(() => {
+    getCurrentVersion().then(setVersionInfo);
+  }, []);
 
   const handleNovelSyncChange = async (enabled: boolean) => {
     setSavingNovelSync(true);
@@ -168,6 +186,41 @@ const Settings: React.FC = () => {
       message.error(error?.message || '选择素材输出目录失败');
     } finally {
       setSavingMaterialDir(false);
+    }
+  };
+
+  const handleCheckUpdate = async () => {
+    setCheckingUpdate(true);
+    setUpdateResult(null);
+    try {
+      const result = await checkForUpdate();
+      setUpdateResult(result);
+
+      if (result.status === 'available') {
+        message.success(result.message);
+      } else if (result.status === 'up-to-date') {
+        message.success(result.message);
+      } else if (result.status === 'unsupported') {
+        message.info(result.message);
+      } else {
+        message.error(result.message);
+      }
+    } finally {
+      setCheckingUpdate(false);
+    }
+  };
+
+  const handleInstallUpdate = async () => {
+    setInstallingUpdate(true);
+    try {
+      const result = await installAvailableUpdate();
+      if (result.status === 'installed') {
+        message.success('更新已安装，应用将自动重启');
+      } else {
+        message.error(result.message);
+      }
+    } finally {
+      setInstallingUpdate(false);
     }
   };
 
@@ -312,6 +365,63 @@ const Settings: React.FC = () => {
           </div>
         </Card>
       </div>
+
+      <Card
+        title={
+          <Space>
+            <CloudDownloadOutlined style={{ color: '#1677ff', fontSize: 24 }} />
+            <span>软件更新</span>
+          </Space>
+        }
+        style={{ borderRadius: 12, marginBottom: 20, boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}
+        styles={{ body: { padding: 24 } }}
+      >
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <Text style={{ width: 128 }}>当前版本</Text>
+            <Tag color={versionInfo.isTauri ? 'blue' : 'default'} style={{ borderRadius: 16, padding: '3px 14px' }}>
+              {versionInfo.version}
+            </Tag>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+            <Button
+              icon={<ReloadOutlined spin={checkingUpdate} />}
+              loading={checkingUpdate}
+              onClick={handleCheckUpdate}
+            >
+              检查更新
+            </Button>
+            <Button
+              type="primary"
+              icon={<DownloadOutlined />}
+              disabled={updateResult?.status !== 'available'}
+              loading={installingUpdate}
+              onClick={handleInstallUpdate}
+            >
+              立即更新
+            </Button>
+          </div>
+        </div>
+
+        {updateResult && (
+          <Alert
+            type={
+              updateResult.status === 'available'
+                ? 'success'
+                : updateResult.status === 'error'
+                  ? 'error'
+                  : updateResult.status === 'unsupported'
+                    ? 'warning'
+                    : 'info'
+            }
+            showIcon
+            message={updateResult.message}
+            description={updateResult.status === 'available' ? updateResult.manifest?.body : undefined}
+            style={{ marginTop: 20, borderRadius: 8 }}
+          />
+        )}
+      </Card>
 
     </div>
   );

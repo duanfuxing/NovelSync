@@ -10,9 +10,12 @@ import DebugConsole from './pages/DebugConsole';
 import Settings from './pages/Settings';
 import MaterialGeneration from './pages/MaterialGeneration';
 import { useAppStore } from './store';
+import { checkForUpdate, installAvailableUpdate } from './utils/updater';
 
 const { Header, Content, Sider } = Layout;
 const { Title, Text } = Typography;
+
+let startupUpdateCheckStarted = false;
 
 const AppMenu = () => {
   const location = useLocation();
@@ -176,6 +179,54 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   return <MainLayout>{children}</MainLayout>;
 };
 
+const StartupUpdateChecker: React.FC = () => {
+  const { modal, message } = AntdApp.useApp();
+
+  useEffect(() => {
+    if (startupUpdateCheckStarted) return;
+    startupUpdateCheckStarted = true;
+
+    const checkStartupUpdate = async () => {
+      const result = await checkForUpdate();
+
+      if (result.status === 'unsupported' || result.status === 'up-to-date') {
+        return;
+      }
+
+      if (result.status === 'error') {
+        message.warning(result.message);
+        return;
+      }
+
+      modal.confirm({
+        title: `发现新版本 ${result.manifest?.version || ''}`.trim(),
+        content: (
+          <div>
+            <Text type="secondary">
+              {result.manifest?.body || '检测到可用更新，建议立即安装。'}
+            </Text>
+          </div>
+        ),
+        okText: '立即更新',
+        cancelText: '稍后',
+        centered: true,
+        async onOk() {
+          const installResult = await installAvailableUpdate();
+          if (installResult.status === 'installed') {
+            message.success('更新已安装，应用将自动重启');
+            return;
+          }
+          message.error(installResult.message);
+        },
+      });
+    };
+
+    checkStartupUpdate();
+  }, [message, modal]);
+
+  return null;
+};
+
 /** 应用启动时尝试从本地 SQLite 恢复登录会话 */
 const SessionRestorer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { restoreSession, token } = useAppStore();
@@ -206,6 +257,7 @@ const App: React.FC = () => {
       }}
     >
       <AntdApp>
+        <StartupUpdateChecker />
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <SessionRestorer>
             <Routes>
