@@ -17,6 +17,12 @@ const SIDECAR_NAME: &str = "novelsync-server";
 const APP_LOCK_FILE: &str = "novelsync-app.pid";
 const SIDECAR_PID_FILE: &str = "novelsync-server.pid";
 
+#[derive(Clone, Copy)]
+enum CleanupPhase {
+    Startup,
+    Exit,
+}
+
 /// 持有 sidecar 子进程句柄，Tauri 退出时主动 kill
 #[derive(Default)]
 struct SidecarState {
@@ -47,11 +53,22 @@ fn remove_file_if_exists(path: &Path) {
 }
 
 #[cfg(target_os = "windows")]
+fn hide_console_window(command: &mut StdCommand) {
+    use std::os::windows::process::CommandExt;
+    const CREATE_NO_WINDOW: u32 = 0x08000000;
+    command.creation_flags(CREATE_NO_WINDOW);
+}
+
+#[cfg(not(target_os = "windows"))]
+fn hide_console_window(_command: &mut StdCommand) {}
+
+#[cfg(target_os = "windows")]
 fn process_is_running(pid: u32) -> bool {
     let filter = format!("PID eq {}", pid);
-    let output = StdCommand::new("tasklist")
-        .args(["/FI", &filter, "/FO", "CSV", "/NH"])
-        .output();
+    let mut command = StdCommand::new("tasklist");
+    command.args(["/FI", &filter, "/FO", "CSV", "/NH"]);
+    hide_console_window(&mut command);
+    let output = command.output();
     match output {
         Ok(output) if output.status.success() => {
             let stdout = String::from_utf8_lossy(&output.stdout);
@@ -63,8 +80,10 @@ fn process_is_running(pid: u32) -> bool {
 
 #[cfg(not(target_os = "windows"))]
 fn process_is_running(pid: u32) -> bool {
-    StdCommand::new("kill")
-        .args(["-0", &pid.to_string()])
+    let mut command = StdCommand::new("kill");
+    command.args(["-0", &pid.to_string()]);
+    hide_console_window(&mut command);
+    command
         .status()
         .map(|status| status.success())
         .unwrap_or(false)
@@ -82,9 +101,10 @@ fn kill_process_tree(pid: u32) {
     if pid == 0 || pid == std::process::id() {
         return;
     }
-    let _ = StdCommand::new("taskkill")
-        .args(["/F", "/T", "/PID", &pid.to_string()])
-        .output();
+    let mut command = StdCommand::new("taskkill");
+    command.args(["/F", "/T", "/PID", &pid.to_string()]);
+    hide_console_window(&mut command);
+    let _ = command.output();
 }
 
 #[cfg(not(target_os = "windows"))]
@@ -92,30 +112,42 @@ fn kill_process_tree(pid: u32) {
     if pid == 0 || pid == std::process::id() {
         return;
     }
-    let _ = StdCommand::new("kill")
-        .args(["-TERM", &pid.to_string()])
-        .status();
+    let mut term = StdCommand::new("kill");
+    term.args(["-TERM", &pid.to_string()]);
+    hide_console_window(&mut term);
+    let _ = term.status();
     thread::sleep(Duration::from_millis(300));
     if process_is_running(pid) {
-        let _ = StdCommand::new("kill")
-            .args(["-KILL", &pid.to_string()])
-            .status();
+        let mut kill = StdCommand::new("kill");
+        kill.args(["-KILL", &pid.to_string()]);
+        hide_console_window(&mut kill);
+        let _ = kill.status();
     }
 }
 
 #[cfg(target_os = "windows")]
 fn kill_sidecars_by_name() {
     let script = "Get-CimInstance Win32_Process | Where-Object { $_.Name -like 'novelsync-server*.exe' } | ForEach-Object { taskkill /F /T /PID $_.ProcessId | Out-Null }";
-    let _ = StdCommand::new("powershell")
-        .args(["-NoProfile", "-Command", script])
-        .output();
+    let mut command = StdCommand::new("powershell.exe");
+    command.args([
+        "-NoLogo",
+        "-NoProfile",
+        "-NonInteractive",
+        "-WindowStyle",
+        "Hidden",
+        "-Command",
+        script,
+    ]);
+    hide_console_window(&mut command);
+    let _ = command.output();
 }
 
 #[cfg(not(target_os = "windows"))]
 fn kill_sidecars_by_name() {
-    let _ = StdCommand::new("pkill")
-        .args(["-f", SIDECAR_NAME])
-        .output();
+    let mut command = StdCommand::new("pkill");
+    command.args(["-f", SIDECAR_NAME]);
+    hide_console_window(&mut command);
+    let _ = command.output();
 }
 
 fn cleanup_sidecar_pid_file(pid_file: &Path) {
@@ -125,11 +157,18 @@ fn cleanup_sidecar_pid_file(pid_file: &Path) {
     remove_file_if_exists(pid_file);
 }
 
-fn cleanup_stale_sidecars(pid_file: Option<&Path>) {
+fn should_kill_sidecars_by_name(phase: CleanupPhase) -> bool {
+    matches!(phase, CleanupPhase::Startup)
+}
+
+fn cleanup_stale_sidecars(pid_file: Option<&Path>, phase: CleanupPhase) {
     if let Some(pid_file) = pid_file {
         cleanup_sidecar_pid_file(pid_file);
     }
-    kill_sidecars_by_name();
+
+    if should_kill_sidecars_by_name(phase) {
+        kill_sidecars_by_name();
+    }
 }
 
 fn lifecycle_dir(app: &tauri::App) -> PathBuf {
@@ -145,38 +184,8 @@ fn kill_sidecar(state: &SidecarState) {
             let pid = child.pid();
             println!("[Tauri] Killing sidecar process (PID={})...", pid);
 
-            // Windows: 用 taskkill /F /T 杀整个进程树，防止子进程残留
-            #[cfg(target_os = "windows")]
-            {
-                let result = std::process::Command::new("taskkill")
-                    .args(["/F", "/T", "/PID", &pid.to_string()])
-                    .output();
-                match result {
-                    Ok(output) => {
-                        if output.status.success() {
-                            println!("[Tauri] Sidecar process tree killed successfully");
-                        } else {
-                            let stderr = String::from_utf8_lossy(&output.stderr);
-                            eprintln!("[Tauri] taskkill stderr: {}", stderr);
-                            // fallback: 尝试直接 kill
-                            let _ = child.kill();
-                        }
-                    }
-                    Err(e) => {
-                        eprintln!("[Tauri] Failed to run taskkill: {}, fallback to child.kill()", e);
-                        let _ = child.kill();
-                    }
-                }
-            }
-
-            // macOS / Linux: 直接 kill 即可（单进程）
-            #[cfg(not(target_os = "windows"))]
-            {
-                match child.kill() {
-                    Ok(_) => println!("[Tauri] Sidecar process killed successfully"),
-                    Err(e) => eprintln!("[Tauri] Failed to kill sidecar: {}", e),
-                }
-            }
+            kill_process_tree(pid);
+            let _ = child.kill();
         }
     }
 
@@ -185,7 +194,7 @@ fn kill_sidecar(state: &SidecarState) {
         .lock()
         .ok()
         .and_then(|guard| guard.clone());
-    cleanup_stale_sidecars(sidecar_pid_file.as_deref());
+    cleanup_stale_sidecars(sidecar_pid_file.as_deref(), CleanupPhase::Exit);
 
     if let Ok(mut guard) = state.app_lock_file.lock() {
         if let Some(lock_file) = guard.take() {
@@ -209,6 +218,12 @@ mod tests {
         assert_eq!(parse_pid_value("0"), None);
         assert_eq!(parse_pid_value("not-a-pid"), None);
     }
+
+    #[test]
+    fn cleanup_phase_only_scans_sidecars_by_name_on_startup() {
+        assert!(should_kill_sidecars_by_name(CleanupPhase::Startup));
+        assert!(!should_kill_sidecars_by_name(CleanupPhase::Exit));
+    }
 }
 
 fn main() {
@@ -229,7 +244,7 @@ fn main() {
             write_pid_file(&app_lock_file, std::process::id());
 
             let sidecar_pid_file = data_dir.join(SIDECAR_PID_FILE);
-            cleanup_stale_sidecars(Some(&sidecar_pid_file));
+            cleanup_stale_sidecars(Some(&sidecar_pid_file), CleanupPhase::Startup);
 
             let mut sidecar_env = HashMap::new();
             sidecar_env.insert(
