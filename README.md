@@ -148,13 +148,13 @@ git add -A
 git commit -m "fix: 修复全量同步参数竞态丢失"
 
 # 2. 打 tag（版本号必须递增）
-git tag v0.4.3
+git tag v0.4.8
 
 # 3. 推送代码 + tag，触发 GitHub Actions 构建
 git push origin main --tags
 
 # 4. GitHub Release 构建完成后，在妙笔服务端导入并启用该版本
-php artisan novelsync:import-release v0.4.3 --enable
+php artisan novelsync:import-release v0.4.8 --enable
 ```
 
 > 不需要手动修改 `.env.production` 的 `APP_VERSION`。Release workflow 会从 tag 自动同步版本；如果 tag 不是 `vX.Y.Z` 格式，或者签名密钥缺失，CI 会直接失败。
