@@ -141,3 +141,95 @@ assert.deepEqual(
     installable: false,
   },
 );
+
+const flowEvents = [];
+await mod.runStartupUpdateFlow({
+  checkForUpdate: async () => ({
+    status: 'up-to-date',
+    message: '当前已是最新版本',
+  }),
+  installAvailableUpdate: async () => {
+    throw new Error('install should not run when app is up to date');
+  },
+  showDialog: (dialog) => {
+    flowEvents.push(['dialog', dialog.kind, dialog.title, dialog.content, dialog.closable]);
+  },
+  closeDialog: () => {
+    flowEvents.push(['close']);
+  },
+  sleep: async (ms) => {
+    flowEvents.push(['sleep', ms]);
+  },
+  autoCloseMs: 1200,
+});
+
+assert.deepEqual(flowEvents, [
+  ['dialog', 'checking', '软件更新检查', '正在检查更新...', false],
+  ['dialog', 'up-to-date', '软件更新检查', '当前已是最新版，无需更新。', false],
+  ['sleep', 1200],
+  ['close'],
+]);
+
+const failedFlowEvents = [];
+await mod.runStartupUpdateFlow({
+  checkForUpdate: async () => ({
+    status: 'error',
+    message: '检查更新失败：network timeout',
+  }),
+  installAvailableUpdate: async () => {
+    throw new Error('install should not run when update check fails');
+  },
+  showDialog: (dialog) => {
+    failedFlowEvents.push(['dialog', dialog.kind, dialog.title, dialog.content, dialog.closable]);
+  },
+  closeDialog: () => {
+    failedFlowEvents.push(['close']);
+  },
+  sleep: async () => {
+    failedFlowEvents.push(['sleep']);
+  },
+});
+
+assert.deepEqual(failedFlowEvents, [
+  ['dialog', 'checking', '软件更新检查', '正在检查更新...', false],
+  [
+    'dialog',
+    'error',
+    '软件更新检查失败',
+    '检查更新失败：network timeout\n请前往“设置 > 软件更新”手动检查更新。',
+    true,
+  ],
+]);
+
+const availableFlowEvents = [];
+let autoInstalled = false;
+await mod.runStartupUpdateFlow({
+  checkForUpdate: async () => ({
+    status: 'available',
+    message: '发现新版本 0.4.1',
+    manifest: {
+      version: '0.4.1',
+      body: '详见提交记录',
+    },
+  }),
+  installAvailableUpdate: async () => {
+    autoInstalled = true;
+    return {
+      status: 'installed',
+      message: '更新已安装',
+    };
+  },
+  showDialog: (dialog) => {
+    availableFlowEvents.push(['dialog', dialog.kind, dialog.title, dialog.content, dialog.closable]);
+  },
+  closeDialog: () => {
+    availableFlowEvents.push(['close']);
+  },
+});
+
+assert.equal(autoInstalled, true);
+assert.deepEqual(availableFlowEvents, [
+  ['dialog', 'checking', '软件更新检查', '正在检查更新...', false],
+  ['dialog', 'installing', '软件更新检查', '发现新版本 0.4.1，正在下载并安装...', false],
+  ['dialog', 'installed', '软件更新检查', '更新已安装，应用将自动重启。', false],
+]);

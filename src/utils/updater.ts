@@ -29,6 +29,22 @@ export type StartupUpdateDialog = {
   installable: boolean;
 };
 
+export type StartupAutoUpdateDialog = {
+  kind: 'checking' | 'up-to-date' | 'installing' | 'installed' | 'error';
+  title: string;
+  content: string;
+  closable: boolean;
+};
+
+export type StartupUpdateFlowOptions = {
+  checkForUpdate?: () => Promise<UpdateCheckResult>;
+  installAvailableUpdate?: () => Promise<UpdateInstallResult>;
+  showDialog: (dialog: StartupAutoUpdateDialog) => void;
+  closeDialog: () => void;
+  sleep?: (ms: number) => Promise<void>;
+  autoCloseMs?: number;
+};
+
 export type UpdaterDependencies = {
   isTauriRuntime: () => boolean;
   getVersion: () => Promise<string>;
@@ -160,4 +176,85 @@ export async function installAvailableUpdate(
       message: `安装更新失败：${errorMessage(error)}`,
     };
   }
+}
+
+function sleepFor(ms: number): Promise<void> {
+  return new Promise((resolve) => {
+    window.setTimeout(resolve, ms);
+  });
+}
+
+function manualUpdateGuidance(message: string): string {
+  return `${message}\n请前往“设置 > 软件更新”手动检查更新。`;
+}
+
+export async function runStartupUpdateFlow({
+  checkForUpdate: runCheckForUpdate = () => checkForUpdate(),
+  installAvailableUpdate: runInstallAvailableUpdate = () => installAvailableUpdate(),
+  showDialog,
+  closeDialog,
+  sleep = sleepFor,
+  autoCloseMs = 1800,
+}: StartupUpdateFlowOptions): Promise<void> {
+  showDialog({
+    kind: 'checking',
+    title: '软件更新检查',
+    content: '正在检查更新...',
+    closable: false,
+  });
+
+  const result = await runCheckForUpdate();
+
+  if (result.status === 'unsupported') {
+    closeDialog();
+    return;
+  }
+
+  if (result.status === 'up-to-date') {
+    showDialog({
+      kind: 'up-to-date',
+      title: '软件更新检查',
+      content: '当前已是最新版，无需更新。',
+      closable: false,
+    });
+    await sleep(autoCloseMs);
+    closeDialog();
+    return;
+  }
+
+  if (result.status === 'error') {
+    showDialog({
+      kind: 'error',
+      title: '软件更新检查失败',
+      content: manualUpdateGuidance(result.message),
+      closable: true,
+    });
+    return;
+  }
+
+  showDialog({
+    kind: 'installing',
+    title: '软件更新检查',
+    content: `发现新版本 ${result.manifest?.version || ''}，正在下载并安装...`.trim(),
+    closable: false,
+  });
+
+  const installResult = await runInstallAvailableUpdate();
+
+  if (installResult.status === 'installed') {
+    showDialog({
+      kind: 'installed',
+      title: '软件更新检查',
+      content: '更新已安装，应用将自动重启。',
+      closable: false,
+    });
+    return;
+  }
+
+  showDialog({
+    kind: 'error',
+    title: '软件更新安装失败',
+    content: manualUpdateGuidance(installResult.message),
+    closable: true,
+  });
 }

@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { App as AntdApp, ConfigProvider, Layout, Typography, Menu, Avatar, Dropdown, Modal, Button, Spin } from 'antd';
 import { BrowserRouter, Routes, Route, Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { DashboardOutlined, SettingOutlined, UserOutlined, LogoutOutlined, IdcardOutlined, FolderOpenOutlined, BookOutlined, BugOutlined, PictureOutlined } from '@ant-design/icons';
@@ -10,7 +10,7 @@ import DebugConsole from './pages/DebugConsole';
 import Settings from './pages/Settings';
 import MaterialGeneration from './pages/MaterialGeneration';
 import { useAppStore } from './store';
-import { checkForUpdate, getStartupUpdateDialog, installAvailableUpdate } from './utils/updater';
+import { isTauriRuntime, runStartupUpdateFlow, type StartupAutoUpdateDialog } from './utils/updater';
 
 const { Header, Content, Sider } = Layout;
 const { Title, Text } = Typography;
@@ -180,69 +180,73 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 };
 
 const StartupUpdateChecker: React.FC = () => {
-  const { modal, message } = AntdApp.useApp();
+  const [dialog, setDialog] = useState<StartupAutoUpdateDialog | null>(null);
 
   useEffect(() => {
     if (startupUpdateCheckStarted) return;
+
+    if (!isTauriRuntime()) {
+      startupUpdateCheckStarted = true;
+      return;
+    }
+
     startupUpdateCheckStarted = true;
+    let active = true;
 
     const checkStartupUpdate = async () => {
-      const result = await checkForUpdate();
-
-      if (result.status === 'unsupported') {
-        return;
-      }
-
-      const dialog = getStartupUpdateDialog(result);
-      const content = (
-        <div>
-          <Text type="secondary">
-            {dialog.content}
-          </Text>
-        </div>
-      );
-
-      if (dialog.kind === 'info') {
-        modal.info({
-          title: dialog.title,
-          content,
-          okText: '知道了',
-          centered: true,
-        });
-        return;
-      }
-
-      if (dialog.kind === 'warning') {
-        modal.warning({
-          title: dialog.title,
-          content,
-          okText: '知道了',
-          centered: true,
-        });
-        return;
-      }
-
-      modal.confirm({
-        title: dialog.title,
-        content,
-        okText: '立即更新',
-        cancelText: '稍后',
-        centered: true,
-        async onOk() {
-          const installResult = await installAvailableUpdate();
-          if (installResult.status === 'installed') {
-            message.success('更新已安装，应用将自动重启');
-            return;
-          }
-          message.error(installResult.message);
+      await runStartupUpdateFlow({
+        showDialog(nextDialog) {
+          if (active) setDialog(nextDialog);
+        },
+        closeDialog() {
+          if (active) setDialog(null);
         },
       });
     };
 
-    checkStartupUpdate();
-  }, [message, modal]);
+    checkStartupUpdate().catch((error) => {
+      if (!active) return;
+      const message = error instanceof Error && error.message ? error.message : '未知错误';
+      setDialog({
+        kind: 'error',
+        title: '软件更新检查失败',
+        content: `检查更新失败：${message}\n请前往“设置 > 软件更新”手动检查更新。`,
+        closable: true,
+      });
+    });
 
-  return null;
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  if (!dialog) return null;
+
+  const busy = dialog.kind === 'checking' || dialog.kind === 'installing';
+  const closeDialog = () => {
+    if (dialog.closable) setDialog(null);
+  };
+
+  return (
+    <Modal
+      open
+      title={dialog.title}
+      closable={dialog.closable}
+      maskClosable={dialog.closable}
+      centered
+      onCancel={closeDialog}
+      footer={dialog.closable ? (
+        <Button type="primary" onClick={closeDialog}>知道了</Button>
+      ) : null}
+    >
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, paddingTop: 4 }}>
+        {busy && <Spin size="small" style={{ marginTop: 2 }} />}
+        <Text type={dialog.kind === 'error' ? 'danger' : 'secondary'} style={{ whiteSpace: 'pre-line' }}>
+          {dialog.content}
+        </Text>
+      </div>
+    </Modal>
+  );
 };
 
 /** 应用启动时尝试从本地 SQLite 恢复登录会话 */
