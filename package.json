@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "test:updater": "node scripts/updater.test.mjs",
+    "test:updater": "node scripts/updater.test.mjs && node scripts/updater-config.test.mjs",
     "test:release": "node scripts/sync-release-version.test.mjs && node scripts/verify-latest-json.test.mjs && node scripts/rewrite-latest-json-urls.test.mjs && node scripts/release-workflow.test.mjs",
     "tauri": "tauri"
   },
