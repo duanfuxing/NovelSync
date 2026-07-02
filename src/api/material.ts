@@ -97,6 +97,7 @@ const normalizeTask = (raw: any): MaterialTask => ({
   nextPollAfterSeconds: normalizeOptionalNumber(raw.nextPollAfterSeconds ?? raw.next_poll_after_seconds) ?? undefined,
   outputDir: raw.outputDir ?? raw.output_dir ?? '',
   imageSize: raw.imageSize ?? raw.image_size,
+  imageModel: raw.imageModel ?? raw.image_model ?? 'jimeng-4.5',
   negativePrompt: raw.negativePrompt ?? raw.negative_prompt,
   promptExtend: Boolean(raw.promptExtend ?? raw.prompt_extend ?? false),
   createdAt: raw.createdAt ?? raw.created_at ?? '',
@@ -129,6 +130,8 @@ const normalizeImage = (raw: any): MaterialImage => ({
   width: raw.width ?? null,
   height: raw.height ?? null,
   fileSize: raw.fileSize ?? raw.file_size ?? null,
+  provider: raw.provider ?? raw.source ?? '',
+  model: raw.model ?? '',
   errorMsg: raw.errorMsg ?? raw.error_msg ?? null,
 });
 
@@ -178,6 +181,7 @@ export const materialApi = {
       count: input.count,
       promptTheme: input.promptTheme,
       imageSize: input.imageSize,
+      imageModel: input.imageModel,
       negativePrompt: input.negativePrompt,
       promptExtend: input.promptExtend ?? false,
     }));

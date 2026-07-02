@@ -46,6 +46,18 @@ class MiaobiMaterialAdapterTest(unittest.TestCase):
             "prompt_extend": True,
         })
 
+    def test_create_payload_forwards_selected_image_model(self):
+        from material_generation.miaobi_adapter import build_cloud_create_payload
+
+        payload = build_cloud_create_payload({
+            "title": "古风",
+            "count": 2,
+            "imageModel": "jimeng-4.6",
+            "image_model": "z-image-turbo",
+        })
+
+        self.assertEqual(payload["image_model"], "jimeng-4.6")
+
     def test_create_payload_allows_missing_optional_title_theme_and_negative_prompt(self):
         from unittest.mock import patch
 
@@ -90,6 +102,22 @@ class MiaobiMaterialAdapterTest(unittest.TestCase):
 
         self.assertIsNone(task["progressPercent"])
 
+    def test_normalize_cloud_task_maps_image_model_and_defaults(self):
+        from material_generation.miaobi_adapter import normalize_cloud_task
+
+        task = normalize_cloud_task({
+            "taskNo": "mg_1",
+            "status": 1,
+            "imageModel": "z-image-turbo",
+        })
+        fallback_task = normalize_cloud_task({
+            "taskNo": "mg_2",
+            "status": 1,
+        })
+
+        self.assertEqual(task["imageModel"], "z-image-turbo")
+        self.assertEqual(fallback_task["imageModel"], "jimeng-4.5")
+
     def test_flatten_cloud_images_maps_item_and_image_ids(self):
         from material_generation.miaobi_adapter import flatten_cloud_images
 
@@ -127,6 +155,8 @@ class MiaobiMaterialAdapterTest(unittest.TestCase):
         self.assertEqual(rows[0]["status"], "success")
         self.assertEqual(rows[0]["prompt"], "提示词")
         self.assertEqual(rows[0]["metadataJson"], {"age": 23})
+        self.assertEqual(rows[0]["provider"], "qwen")
+        self.assertEqual(rows[0]["model"], "wan_2_7_pro")
 
 
 if __name__ == "__main__":

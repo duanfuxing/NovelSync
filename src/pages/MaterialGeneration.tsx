@@ -46,6 +46,15 @@ import type {
 const { Text, Title, Paragraph } = Typography;
 
 const ACTIVE_STATUSES = new Set<MaterialTaskStatus>(['pending', 'running', 'cancel_requested']);
+const DEFAULT_IMAGE_MODEL = 'jimeng-4.5';
+const FALLBACK_IMAGE_MODELS = [
+  { value: 'jimeng-4.5', label: '即梦 4.5', provider: 'jimeng' },
+  { value: 'jimeng-4.0', label: '即梦 4.0', provider: 'jimeng' },
+  { value: 'jimeng-4.1', label: '即梦 4.1', provider: 'jimeng' },
+  { value: 'jimeng-4.6', label: '即梦 4.6', provider: 'jimeng' },
+  { value: 'jimeng-5.0', label: '即梦 5.0', provider: 'jimeng' },
+  { value: 'z-image-turbo', label: 'Z-Image Turbo', provider: 'qwen' },
+];
 
 const statusMeta: Record<MaterialTaskStatus, { label: string; color: string; icon?: React.ReactNode }> = {
   pending: { label: '排队中', color: 'default', icon: <SyncOutlined /> },
@@ -108,6 +117,18 @@ const getImageStatusTagColor = (status: MaterialImage['status']) => {
   return 'processing';
 };
 
+const isZImageModel = (model?: string) => model === 'z-image-turbo';
+
+const getImageModelLabel = (
+  model?: string,
+  options: Array<{ value: string; label: string; provider: string }> = FALLBACK_IMAGE_MODELS,
+) => {
+  if (!model) return DEFAULT_IMAGE_MODEL;
+  return options.find((option) => option.value === model)?.label || model;
+};
+
+const getImageModelTagColor = (model?: string) => (isZImageModel(model) ? 'orange' : 'blue');
+
 const getImageCardClassName = (image: MaterialImage, checked: boolean) => [
   'material-image-card',
   checked ? 'material-image-card-selected' : '',
@@ -153,6 +174,17 @@ const MaterialGeneration: React.FC = () => {
   const [activeDownloadJobId, setActiveDownloadJobId] = useState('');
   const [activeDownloadJob, setActiveDownloadJob] = useState<MaterialDownloadJob | null>(null);
 
+  const imageModelOptions = useMemo(
+    () => (configStatus?.cloudConfig?.imageModels?.length
+      ? configStatus.cloudConfig.imageModels
+      : FALLBACK_IMAGE_MODELS),
+    [configStatus],
+  );
+  const selectedImageModelValue = Form.useWatch('imageModel', form) as string | undefined;
+  const selectedImageModel = selectedImageModelValue
+    || configStatus?.cloudConfig?.defaultImageModel
+    || DEFAULT_IMAGE_MODEL;
+
   const selectedTask = useMemo(
     () => tasks.find((task) => task.taskId === selectedTaskId) ?? null,
     [selectedTaskId, tasks],
@@ -189,7 +221,10 @@ const MaterialGeneration: React.FC = () => {
       const status = await materialApi.getConfigStatus();
       setConfigStatus(status);
       setOutputDir(status.outputDir);
-      form.setFieldsValue({ imageSize: status.cloudConfig?.defaultImageSize || '1140x640' });
+      form.setFieldsValue({
+        imageSize: status.cloudConfig?.defaultImageSize || '1140x640',
+        imageModel: status.cloudConfig?.defaultImageModel || DEFAULT_IMAGE_MODEL,
+      });
     } catch {
       try {
         const dir = await materialApi.getOutputDir(clientId);
@@ -349,6 +384,7 @@ const MaterialGeneration: React.FC = () => {
     title?: string;
     count: number;
     imageSize?: string;
+    imageModel?: string;
   }) => {
     const title = values.title?.trim();
     setSubmitting(true);
@@ -357,6 +393,7 @@ const MaterialGeneration: React.FC = () => {
         title: title || undefined,
         count: values.count,
         imageSize: values.imageSize,
+        imageModel: values.imageModel || DEFAULT_IMAGE_MODEL,
       });
       message.success('制作任务已提交');
       form.setFieldsValue({ title: undefined });
@@ -548,7 +585,7 @@ const MaterialGeneration: React.FC = () => {
         <Form
           form={form}
           layout="vertical"
-          initialValues={{ count: 10, imageSize: '1140x640' }}
+          initialValues={{ count: 10, imageSize: '1140x640', imageModel: DEFAULT_IMAGE_MODEL }}
           onFinish={handleCreateTask}
           requiredMark={false}
         >
@@ -581,6 +618,28 @@ const MaterialGeneration: React.FC = () => {
                 ]).map((item) => ({ value: item.value, label: item.label || item.value }))}
             />
           </Form.Item>
+
+          <Form.Item
+            name="imageModel"
+            label="出图模型"
+            rules={[{ required: true, message: '请选择出图模型' }]}
+          >
+            <Select
+              options={imageModelOptions.map((item) => ({
+                value: item.value,
+                label: `${item.label} · ${item.provider}`,
+              }))}
+            />
+          </Form.Item>
+
+          {isZImageModel(selectedImageModel) && (
+            <Alert
+              type="info"
+              showIcon
+              message="Z-Image Turbo 受全站每月 15000 张成功图额度限制"
+              style={{ marginBottom: 16, borderRadius: 8 }}
+            />
+          )}
 
           <Button
             type="primary"
@@ -660,6 +719,7 @@ const MaterialGeneration: React.FC = () => {
             {images.map((image, index) => {
               const imageText = image.errorMsg || image.prompt || '—';
               const imageSizeText = getImageSizeText(image, selectedTask);
+              const imageModelText = image.model ? getImageModelLabel(image.model, imageModelOptions) : '';
               const positionText = `#${index + 1}`;
               const checked = selectedImageIds.includes(image.imageId);
               const isGenerating = image.status === 'pending' || image.status === 'running';
@@ -742,6 +802,11 @@ const MaterialGeneration: React.FC = () => {
                       <Tag color={getImageStatusTagColor(image.status)} style={{ margin: 0, borderRadius: 4, fontSize: 12 }}>
                         {getImageStatusLabel(image.status)}
                       </Tag>
+                      {imageModelText && (
+                        <Tag color={getImageModelTagColor(image.model)} style={{ margin: 0, borderRadius: 4, fontSize: 12 }}>
+                          {imageModelText}
+                        </Tag>
+                      )}
                     </div>
                     <Text type="secondary" className="material-image-card-size">
                       {imageSizeText} · {positionText}
@@ -838,6 +903,8 @@ const MaterialGeneration: React.FC = () => {
               const selected = task.taskId === selectedTaskId;
               const progress = getProgressPercent(task);
               const progressText = getProgressText(task);
+              const taskImageModel = task.imageModel || DEFAULT_IMAGE_MODEL;
+              const taskImageModelText = getImageModelLabel(taskImageModel, imageModelOptions);
               return (
                 <div
                   key={task.taskId}
@@ -879,10 +946,15 @@ const MaterialGeneration: React.FC = () => {
                   />
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                     <Text type="secondary" style={{ fontSize: 12 }}>{formatDateTime(task.createdAt)}</Text>
-                    <Text type="secondary" style={{ fontSize: 12 }}>
-                      {task.successCount}/{task.requestedCount}
-                      {task.failedCount > 0 ? `，失败 ${task.failedCount}` : ''}
-                    </Text>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
+                      <Tag color={getImageModelTagColor(taskImageModel)} style={{ margin: 0, borderRadius: 4, fontSize: 12 }}>
+                        {taskImageModelText}
+                      </Tag>
+                      <Text type="secondary" style={{ fontSize: 12, whiteSpace: 'nowrap' }}>
+                        {task.successCount}/{task.requestedCount}
+                        {task.failedCount > 0 ? `，失败 ${task.failedCount}` : ''}
+                      </Text>
+                    </div>
                   </div>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     {ACTIVE_STATUSES.has(task.status) && (

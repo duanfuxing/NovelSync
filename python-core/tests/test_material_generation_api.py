@@ -15,8 +15,19 @@ class MaterialGenerationApiTest(unittest.TestCase):
     def test_config_status_uses_cloud_config_as_readiness(self):
         import api.material_generation as material_api
 
+        image_models = [
+            {"value": "jimeng-4.5", "label": "即梦 4.5", "provider": "jimeng"},
+            {"value": "z-image-turbo", "label": "Z-Image Turbo", "provider": "qwen"},
+        ]
         client = Mock()
-        client.get_material_config.return_value = {"code": 10000, "data": {"imageSizes": ["1140x640"]}}
+        client.get_material_config.return_value = {
+            "code": 10000,
+            "data": {
+                "imageSizes": ["1140x640"],
+                "defaultImageModel": "jimeng-4.5",
+                "imageModels": image_models,
+            },
+        }
         with patch.object(material_api, "current_user_phone", return_value="13800000000"), \
              patch.object(material_api, "get_active_token", return_value="token-1"), \
              patch.object(material_api, "get_active_material_output_dir", return_value="/tmp/output"), \
@@ -30,6 +41,8 @@ class MaterialGenerationApiTest(unittest.TestCase):
         self.assertFalse(data["textServiceConfigured"])
         self.assertFalse(data["imageServiceConfigured"])
         self.assertEqual(data["outputDir"], "/tmp/output")
+        self.assertEqual(data["cloudConfig"]["defaultImageModel"], "jimeng-4.5")
+        self.assertEqual(data["cloudConfig"]["imageModels"], image_models)
 
     def test_reveal_task_output_dir_is_not_supported_for_cloud_data(self):
         import api.material_generation as material_api

@@ -12,6 +12,12 @@ export type MaterialTaskStatus =
 export type MaterialImageStatus = 'pending' | 'running' | 'success' | 'failed' | 'canceled';
 export type MaterialDownloadJobStatus = 'pending' | 'running' | 'success' | 'partial_failed' | 'failed';
 
+export interface MaterialImageModelOption {
+  value: string;
+  label: string;
+  provider: string;
+}
+
 export interface MaterialTask {
   taskId: string;
   title: string;
@@ -23,6 +29,7 @@ export interface MaterialTask {
   nextPollAfterSeconds?: number;
   outputDir: string;
   imageSize?: string;
+  imageModel?: string;
   negativePrompt?: string;
   promptExtend?: boolean;
   createdAt: string;
@@ -55,6 +62,8 @@ export interface MaterialImage {
   width?: number | null;
   height?: number | null;
   fileSize?: number | null;
+  provider?: string;
+  model?: string;
   errorMsg?: string | null;
 }
 
@@ -63,6 +72,7 @@ export interface MaterialTaskCreateInput {
   count: number;
   promptTheme?: string;
   imageSize?: string;
+  imageModel?: string;
   negativePrompt?: string;
   promptExtend?: boolean;
 }
@@ -90,6 +100,8 @@ export interface MaterialConfigStatus {
   cloudConfig?: {
     defaultImageSize?: string;
     imageSizes?: Array<{ value: string; label: string; width: number; height: number }>;
+    defaultImageModel?: string;
+    imageModels?: MaterialImageModelOption[];
   };
   modelConfig?: {
     llm_provider?: string;

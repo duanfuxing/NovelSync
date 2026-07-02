@@ -8,3 +8,4 @@ class CreateMaterialTaskRequest(BaseModel):
     imageSize: str | None = None
     negativePrompt: str | None = Field(default=None, max_length=1000)
     promptExtend: bool = False
+    imageModel: str | None = Field(default=None, max_length=64)

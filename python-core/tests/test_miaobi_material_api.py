@@ -66,6 +66,7 @@ class MiaobiMaterialApiTest(unittest.TestCase):
                 "failedCount": 0,
                 "progressPercent": 0,
                 "nextPollAfterSeconds": 3,
+                "imageModel": "jimeng-4.6",
                 "createdAt": "2026-06-25 12:00:00",
             },
         }
@@ -79,11 +80,13 @@ class MiaobiMaterialApiTest(unittest.TestCase):
                 imageSize="1140x640",
                 negativePrompt="水印",
                 promptExtend=False,
+                imageModel="jimeng-4.6",
             ))
 
         self.assertEqual(result["code"], 10000)
         self.assertEqual(result["data"]["taskId"], "mg_1")
         self.assertEqual(result["data"]["status"], "pending")
+        self.assertEqual(result["data"]["imageModel"], "jimeng-4.6")
         client.create_material_task.assert_called_once_with({
             "title": "古风",
             "prompt_theme": "灯笼",
@@ -91,6 +94,7 @@ class MiaobiMaterialApiTest(unittest.TestCase):
             "image_size": "1140x640",
             "negative_prompt": "水印",
             "prompt_extend": False,
+            "image_model": "jimeng-4.6",
         })
 
     def test_create_task_without_prompt_theme_does_not_send_theme(self):

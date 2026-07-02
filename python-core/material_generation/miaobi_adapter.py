@@ -23,6 +23,9 @@ ITEM_STATUS_MAP = {
     5: "canceled",
 }
 
+DEFAULT_IMAGE_MODEL = "jimeng-4.5"
+
+
 def _to_int(value: int | str | None) -> int | None:
     if value is None:
         return None
@@ -83,6 +86,10 @@ def build_cloud_create_payload(raw: dict) -> dict:
     if negative_prompt:
         payload["negative_prompt"] = str(negative_prompt).strip()[:1000]
 
+    image_model = raw.get("imageModel") or raw.get("image_model")
+    if image_model:
+        payload["image_model"] = str(image_model).strip()[:64]
+
     return payload
 
 
@@ -108,6 +115,7 @@ def normalize_cloud_task(raw: dict, user_phone: str = "") -> dict:
         "negativePrompt": raw.get("negativePrompt") or raw.get("negative_prompt") or "",
         "promptExtend": int(raw.get("promptExtend") or raw.get("prompt_extend") or 0),
         "imageSize": raw.get("imageSize") or raw.get("image_size") or "",
+        "imageModel": raw.get("imageModel") or raw.get("image_model") or DEFAULT_IMAGE_MODEL,
         "status": status,
         "requestedCount": requested_count,
         "successCount": success_count,
